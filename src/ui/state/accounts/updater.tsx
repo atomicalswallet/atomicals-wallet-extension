@@ -7,7 +7,7 @@ import { useWallet } from '@/ui/utils';
 import { useIsUnlocked } from '../global/hooks';
 import { useAppDispatch } from '../hooks';
 import { keyringsActions } from '../keyrings/reducer';
-import { useAccountBalance, useAtomicals, useAtomicalsCallback, useCurrentAccount, useFetchBalanceCallback } from './hooks';
+import { useAccountBalance, useAtomicals, useAtomicalsCallback, useCurrentAccount } from './hooks';
 import { accountActions } from './reducer';
 
 export default function AccountUpdater() {
@@ -45,7 +45,7 @@ export default function AccountUpdater() {
       // setLoading(false);
       dispatch(accountActions.setAtomicals({
         ...atomicals,
-        atomicalBalances: undefined,
+        atomicalsValue: undefined,
       }));
     }
   }, [dispatch, currentAccount, wallet, isUnlocked]);

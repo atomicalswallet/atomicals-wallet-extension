@@ -1,7 +1,7 @@
 import { useCallback } from 'react';
 
 import { CHANNEL, VERSION } from '@/shared/constant';
-import { NetworkType } from '@/shared/types';
+import { AtomNetworkType, NetworkType } from '@/shared/types';
 import { useWallet } from '@/ui/utils';
 import i18n, { addResourceBundle } from '@/ui/utils/i18n';
 
@@ -48,6 +48,11 @@ export function useNetworkType() {
   return accountsState.networkType;
 }
 
+export function useAtomNetworkType() {
+  const accountsState = useSettingsState();
+  return accountsState.atomNetworkType;
+}
+
 export function useChangeNetworkTypeCallback() {
   const dispatch = useAppDispatch();
   const wallet = useWallet();
@@ -57,6 +62,20 @@ export function useChangeNetworkTypeCallback() {
       dispatch(
         settingsActions.updateSettings({
           networkType: type
+        })
+      );
+    },
+    [dispatch]
+  );
+}
+
+export function useChangeAtomNetworkTypeCallback() {
+  const dispatch = useAppDispatch();
+  return useCallback(
+    async (type: AtomNetworkType) => {
+      dispatch(
+        settingsActions.updateSettings({
+          atomNetworkType: type
         })
       );
     },

@@ -2,19 +2,19 @@ import { Account, AppSummary, Inscription, InscriptionSummary, TxHistoryItem } f
 import { createSlice } from '@reduxjs/toolkit';
 
 import { updateVersion } from '../global/actions';
-import { IAtomicalBalances, ISelectedUtxo, UTXO as AtomUTXO } from '@/background/service/interfaces/api';
-import { AtomicalsInfo } from '@/background/service/interfaces/api';
+import { IWalletBalance } from '@/background/service/interfaces/api';
 
 export interface AccountsState {
   accounts: Account[];
   current: Account;
   loading: boolean;
-  atomicals: AtomicalsInfo;
+  atomicals: IWalletBalance;
   balanceMap: {
     [key: string]: {
       amount: string;
       btc_amount: string;
       inscription_amount: string;
+      atomical_amount: string;
       expired: boolean;
     };
   };
@@ -51,17 +51,23 @@ export const initialState: AccountsState = {
   current: initialAccount,
   loading: false,
   atomicals:{
-    atomicalConfirmed: 0,
-    atomicalBalances: undefined,
-    atomicalsUtxos: [],
-    allUtxos: [],
-    nonAtomicalUtxos: [],
-    nonAtomUtxosValue: 0,
-    ordinalItems: [],
-    ordinalSats: 0,
-    atomicalUnconfirmed: 0,
-    mempoolUtxo: [],
-    mempoolBalance: 0
+    atomicalMerged: [],
+    atomicalNFTs: [],
+    scripthash: '',
+    address: '',
+    atomicalsUTXOs: [],
+    atomicalsValue: undefined,
+    regularsUTXOs: [],
+    atomicalFTs: [],
+    ordinalsValue: 0,
+    confirmedUTXOs: [],
+    unconfirmedUTXOs: [],
+    ordinalsUTXOs: [],
+    atomicalsWithOrdinalsValue: 0,
+    confirmedValue: 0,
+    regularsValue: 0,
+    unconfirmedValue: 0,
+    atomicalsWithOrdinalsUTXOs: [],
 
   },
   balanceMap: {},
@@ -97,27 +103,30 @@ const slice = createSlice({
           address: string;
           amount: string;
           btc_amount: string;
+          atomical_amount: string;
           inscription_amount: string;
         };
       }
     ) {
       const {
-        payload: { address, amount, btc_amount, inscription_amount }
+        payload: { address, amount, btc_amount, inscription_amount, atomical_amount }
       } = action;
       state.balanceMap[address] = state.balanceMap[address] || {
         amount: '0',
         btc_amount: '0',
         inscription_amount: '0',
+        atomical_amount: '0',
         expired: true
       };
       console.log({amount,btc_amount,inscription_amount});
       state.balanceMap[address].amount = amount;
       state.balanceMap[address].btc_amount = btc_amount;
       state.balanceMap[address].inscription_amount = inscription_amount;
+      state.balanceMap[address].atomical_amount = atomical_amount;
       state.balanceMap[address].expired = false;
     },
     setAtomicals(state, action: {
-      payload: AtomicalsInfo;
+      payload: IWalletBalance;
     }){
       const {
         payload

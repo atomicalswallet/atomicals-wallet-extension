@@ -1,30 +1,19 @@
-import { Checkbox } from 'antd';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useLocation } from 'react-router-dom';
 
-import { RawTxInfo, TokenBalance, TokenTransfer, TransferFtConfigInterface, TxType } from '@/shared/types';
+import { RawTxInfo, TokenTransfer, TransferFtConfigInterface } from '@/shared/types';
 import { Button, Column, Content, Header, Input, Layout, Row, Text } from '@/ui/components';
-import { useTools } from '@/ui/components/ActionComponent';
-import BRC20Preview from '@/ui/components/BRC20Preview';
 import { FeeRateBar } from '@/ui/components/FeeRateBar';
-import { RefreshButton } from '@/ui/components/RefreshButton';
-import { TabBar } from '@/ui/components/TabBar';
-import { useAccountAddress, useAccountBalance, useAtomicals, useCurrentAccount } from '@/ui/state/accounts/hooks';
+import { useAccountAddress, useAccountBalance, useAtomicals } from '@/ui/state/accounts/hooks';
 import {
   useBitcoinTx,
-  useCreateARC20TxCallback,
-  useCreateMultiOrdinalsTxCallback,
-  usePushOrdinalsTxCallback
+  useCreateARC20TxCallback
 } from '@/ui/state/transactions/hooks';
-import { colors } from '@/ui/theme/colors';
-import { fontSizes } from '@/ui/theme/font';
-import { isValidAddress, satoshisToAmount, useLocationState, useWallet } from '@/ui/utils';
+import { isValidAddress, satoshisToAmount } from '@/ui/utils';
 
-import { SignPsbt } from '../Approval/components';
 import { useNavigate } from '../MainRoute';
-import { IAtomicalBalanceItem, ISelectedUtxo } from '@/background/service/interfaces/api';
+import { IAtomicalItem, UTXO } from '@/background/service/interfaces/api';
 import { DUST_AMOUNT } from '@/shared/constant';
-import { use } from 'i18next';
 
 enum TabKey {
   STEP1,
@@ -34,7 +23,7 @@ enum TabKey {
 
 interface ContextData {
   tabKey: TabKey;
-  tokenBalance: IAtomicalBalanceItem;
+  tokenBalance: IAtomicalItem;
   transferAmount: number;
   transferableList: TokenTransfer[];
   inscriptionIdSet: Set<string>;
@@ -80,16 +69,15 @@ function Step1({
   // const [rawTxInfo, setRawTxInfo] = useState<RawTxInfo>();
   const createARC20Tx = useCreateARC20TxCallback();
   const atomicals = useAtomicals();
-  console.log('atomicals', atomicals);
-  const relatedAtomUtxos = atomicals.atomicalsUtxos
-    ? atomicals.atomicalsUtxos.filter((o) => o.atomicals[0] === contextData.tokenBalance.atomical_id)
+  const relatedAtomUtxos = atomicals.atomicalsUTXOs
+    ? atomicals.atomicalsUTXOs.filter((o) => o.atomicals?.includes(contextData.tokenBalance.atomical_id) )
     : [];
 
   useEffect(() => {
     setError('');
     setDisabled(true);
 
-    if (inputAmount && Number(inputAmount) < DUST_AMOUNT) { 
+    if (inputAmount && Number(inputAmount) < DUST_AMOUNT) {
       return setError(`Amount must be at least ${DUST_AMOUNT} sats`);
     }
 
@@ -102,7 +90,6 @@ function Step1({
     }
     setDisabled(false);
   }, [toInfo, inputAmount, feeRate]);
-  console.log('toInfo',toInfo)
 
   const {
     utxos,
@@ -114,7 +101,7 @@ function Step1({
   } = useMemo(() => {
     const currentOutputValue = Number(inputAmount);
     if (currentOutputValue < DUST_AMOUNT) {
-     
+
       return {
         utxos: [],
         outputs: [],
@@ -125,7 +112,6 @@ function Step1({
       };
     }
     const sorted = Array.from(relatedAtomUtxos).sort((a, b) => b.value - a.value);
-    console.log('sorted', sorted);
     const outputs = [
       {
         value: currentOutputValue as number,
@@ -133,7 +119,7 @@ function Step1({
       }
     ];
     let _selectedValue = 0;
-    const _selectedUtxos: ISelectedUtxo[] = [];
+    const _selectedUtxos: UTXO[] = [];
     let _break_i: number | undefined = undefined;
     for (let i = 0; i < sorted.length; i++) {
       _selectedValue += sorted[i].value;
@@ -144,7 +130,7 @@ function Step1({
       }
     }
 
-    const _remaining_utxos: ISelectedUtxo[] = [];
+    const _remaining_utxos: UTXO[] = [];
     let _remaining_balances = 0;
     if (_break_i !== undefined) {
       for (let i = _break_i + 1; i < sorted.length; i += 1) {
@@ -168,13 +154,13 @@ function Step1({
     const changeAmount = _selectedValue - (currentOutputValue ?? 0);
 
     finalTokenOutputs = outputs.map((f) => {
-      return { value: f.value, address: toInfo.address, ticker: contextData.tokenBalance.ticker, change: false };
+      return { value: f.value, address: toInfo.address, ticker: contextData.tokenBalance.$ticker as string, change: false };
     });
     if (changeAmount > 0) {
       finalTokenOutputs.push({
         value: changeAmount,
         address: fromAddress,
-        ticker: contextData.tokenBalance.ticker,
+        ticker: contextData.tokenBalance.$ticker!,
         change: true
       });
     }
@@ -192,21 +178,15 @@ function Step1({
     };
   }, [contextData.tokenBalance, inputAmount, toInfo, feeRate]);
 
-  console.log('input', utxos, remaining_utxos, remaining, remaining_min, totalAmount);
   const onClickNext = async () => {
     const obj: TransferFtConfigInterface = {
-      atomicalsInfo: {
-        confirmed: contextData?.tokenBalance.confirmed,
-        type: contextData?.tokenBalance?.type,
-        utxos: relatedAtomUtxos
-      },
       selectedUtxos: utxos ?? [],
+      type: contextData?.tokenBalance?.type,
       outputs: outputs ?? [],
     };
-    const rawTxInfo = await createARC20Tx(obj, toInfo, atomicals.nonAtomicalUtxos, feeRate, false);
-    console.log('rawTxInfo', rawTxInfo)
+    const rawTxInfo = await createARC20Tx(obj, toInfo, atomicals.regularsUTXOs, feeRate, false);
     if(rawTxInfo && rawTxInfo.fee) {
-      if(rawTxInfo.fee > atomicals.nonAtomUtxosValue ) {
+      if(rawTxInfo.fee > atomicals.regularsValue ) {
         setError(`Fee ${rawTxInfo.fee} sats Insufficient BTC balance`);
         return;
       }
@@ -219,8 +199,8 @@ function Step1({
       <Column full>
         <Column gap="lg" full>
           <Column>
-            <Text text={`${contextData.tokenBalance.ticker} Balance`} color="textDim" />
-            <Text text={`${contextData.tokenBalance.confirmed} ${contextData.tokenBalance.ticker}`} size="xxl" textCenter my="lg" />
+            <Text text={`${contextData.tokenBalance.$ticker} Balance`} color="textDim" />
+            <Text text={`${contextData.tokenBalance.value} ${contextData.tokenBalance.$ticker}`} size="xxl" textCenter my="lg" />
           </Column>
 
           {/* <Column>
@@ -280,7 +260,7 @@ function Step1({
 const ARC20SendScreen = () => {
   const { state } = useLocation();
   const props = state as {
-    tokenBalance: IAtomicalBalanceItem;
+    tokenBalance: IAtomicalItem;
     selectedInscriptionIds: string[];
     selectedAmount: number;
   };
@@ -317,7 +297,7 @@ const ARC20SendScreen = () => {
     }
     // else if (contextData.tabKey === TabKey.STEP2) {
     //   return <Step2 contextData={contextData} updateContextData={updateContextData} />;
-    // } 
+    // }
     // else {
     //   return <Step3 contextData={contextData} updateContextData={updateContextData} />;
     // }

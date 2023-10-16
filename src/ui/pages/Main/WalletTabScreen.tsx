@@ -2,15 +2,13 @@ import { Tooltip } from 'antd';
 import { useEffect, useMemo, useState } from 'react';
 
 import { KEYRING_TYPE } from '@/shared/constant';
-import { TokenBalance, NetworkType, Inscription } from '@/shared/types';
+import { NetworkType, Inscription } from '@/shared/types';
 import { Card, Column, Content, Footer, Header, Icon, Layout, Row, Text } from '@/ui/components';
 import AccountSelect from '@/ui/components/AccountSelect';
 import { useTools } from '@/ui/components/ActionComponent';
 import { AddressBar } from '@/ui/components/AddressBar';
-import BRC20BalanceCard from '@/ui/components/BRC20BalanceCard';
 import { Button } from '@/ui/components/Button';
 import { Empty } from '@/ui/components/Empty';
-import InscriptionPreview from '@/ui/components/InscriptionPreview';
 import { NavTabBar } from '@/ui/components/NavTabBar';
 import { Pagination } from '@/ui/components/Pagination';
 import { TabBar } from '@/ui/components/TabBar';
@@ -33,9 +31,9 @@ import { useWallet } from '@/ui/utils';
 import { LoadingOutlined } from '@ant-design/icons';
 
 import { useNavigate } from '../MainRoute';
-import { IAtomicalBalances } from '@/background/service/interfaces/api';
 import ARC20BalanceCard from '@/ui/components/ARC20BalanceCard';
 import ARC20NFTCard from '@/ui/components/ARC20NFTCard';
+import { IAtomicalItem } from '@/background/service/interfaces/api';
 
 export default function WalletTabScreen() {
   const navigate = useNavigate();
@@ -92,6 +90,11 @@ export default function WalletTabScreen() {
       key: WalletTabScreenTabKey.NFT,
       label: 'NFT',
       children: <ARC20List tabKey={tabKey} />
+    },
+    {
+      key: WalletTabScreenTabKey.MERGED,
+      label: 'Merged',
+      children: <ARC20List tabKey={tabKey} />
     }
   ];
 
@@ -140,8 +143,8 @@ export default function WalletTabScreen() {
                   <span>{` ${accountBalance.btc_amount} BTC`}</span>
                 </Row>
                 <Row justifyBetween>
-                  <span>{'Inscription Balance'}</span>
-                  <span>{` ${accountBalance.inscription_amount} BTC`}</span>
+                  <span>{'Atomicals Balance'}</span>
+                  <span>{` ${accountBalance.atomical_amount} BTC`}</span>
                 </Row>
               </span>
             }
@@ -373,6 +376,39 @@ function InscriptionList() {
 //   );
 // }
 
+const AtomicalView = ({ items }: { items: IAtomicalItem[] }) => {
+  const navigate = useNavigate();
+  return (
+    <>
+      {items.map((data, index) => {
+        if (data.type === 'FT') {
+          return (
+            <ARC20BalanceCard
+              key={index}
+              tokenBalance={data}
+              onClick={() => {
+                navigate('ARC20SendScreen', { tokenBalance: data, ticker: data.$ticker });
+              }}
+            />
+          );
+        } else if (data.type === 'NFT') {
+          return (
+            <ARC20NFTCard
+              key={index}
+              // checkbox
+              selectvalues={[]}
+              tokenBalance={data}
+              onClick={() => {
+                navigate('ARC20NFTScreen', { tokenBalance: data, ticker: data.$ticker });
+              }}
+            />
+          );
+        }
+      })}
+    </>
+  );
+};
+
 function ARC20List({ tabKey }: { tabKey: WalletTabScreenTabKey }) {
   const navigate = useNavigate();
   const wallet = useWallet();
@@ -416,7 +452,7 @@ function ARC20List({ tabKey }: { tabKey: WalletTabScreenTabKey }) {
     // fetchData();
   }, [pagination]);
 
-  if (atomicals?.atomicalBalances === undefined) {
+  if (atomicals?.atomicalsValue === undefined) {
     return (
       <Column style={{ minHeight: 150 }} itemsCenter justifyCenter>
         <LoadingOutlined />
@@ -424,7 +460,7 @@ function ARC20List({ tabKey }: { tabKey: WalletTabScreenTabKey }) {
     );
   }
 
-  if (Object.values(atomicals.atomicalBalances).length === 0) {
+  if (atomicals.atomicalsUTXOs.length === 0) {
     return (
       <Column style={{ minHeight: 150 }} itemsCenter justifyCenter>
         <Empty text="Empty" />
@@ -432,43 +468,38 @@ function ARC20List({ tabKey }: { tabKey: WalletTabScreenTabKey }) {
     );
   }
 
-  const onChange = (checkedValues: any) => {
-    console.log('checked = ', checkedValues);
-  };
-
-
   return (
     <Column>
       <Row style={{ flexWrap: 'wrap' }} gap="sm">
-        
-          {(tabKey === WalletTabScreenTabKey.FT
-            ? Object.values(atomicals.atomicalBalances).filter((d) => d.type === 'FT')
-            : Object.values(atomicals.atomicalBalances).filter((d) => d.type === 'NFT')
-          ).map((data, index) => {
-            if (data.type === 'FT') {
+        {tabKey === WalletTabScreenTabKey.MERGED ? (
+          <>
+            <Row mb='md'>
+              <Text text={'To split NFTs, visit '} color="textDim" />
+              <Text text={'https://wizz.cash/.'} onClick={() => {
+                window.open('https://wizz.cash');
+              }} />
+            </Row>
+            {atomicals.atomicalMerged.map((utxo) => {
               return (
-                <ARC20BalanceCard
-                  key={index}
-                  tokenBalance={data}
-                  onClick={() => {
-                    navigate('ARC20SendScreen', { tokenBalance: data, ticker: data.ticker });
-                  }}
-                />
+                <>
+                  <Text text={`UTXO: ${utxo.txid}`} color="textDim" />
+                  <Row>
+                    <Text text={'Including:'} size="xs" color="textDim" />
+                    <Text text={`${utxo.value}`} size="xs" />
+                    <Text text={'sats, '} size="xs" color="textDim" />
+                    <Text text={`${utxo.atomicals.length}`} size="xs" />
+                    <Text text={'atomicals'} color="textDim" />
+                  </Row>
+                  <AtomicalView items={utxo.atomicals} />
+                </>
               );
-            } else if (data.type === 'NFT') {
-              return (
-                <ARC20NFTCard
-                  key={index}
-                  // checkbox
-                  selectvalues={[]}
-                  tokenBalance={data}
-                  onClick={() => {
-                    navigate('ARC20NFTScreen', { tokenBalance: data, ticker: data.ticker });
-                  }}
-                />
-              );
-            }
-          })}
+            })}
+          </>
+        ) : tabKey === WalletTabScreenTabKey.FT ? (
+          <AtomicalView items={atomicals.atomicalFTs} />
+        ) : (
+          <AtomicalView items={atomicals.atomicalNFTs} />
+        )}
       </Row>
 
       <Row justifyCenter mt="lg">

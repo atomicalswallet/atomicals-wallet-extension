@@ -1,24 +1,18 @@
-import { Tooltip } from 'antd';
 
 // import { TokenBalance } from '@/shared/types';
-import { colors } from '@/ui/theme/colors';
-import { fontSizes } from '@/ui/theme/font';
-import { InfoCircleOutlined } from '@ant-design/icons';
-import { toUnicode } from 'punycode';
 import { Card } from '../Card';
 import { Column } from '../Column';
 import { Row } from '../Row';
 import { Text } from '../Text';
-import { IAtomicalBalanceItem } from '@/background/service/interfaces/api';
-import { findValueInDeepObject, returnImageType } from '@/ui/utils';
+import { returnImageType } from '@/ui/utils';
 import { Image } from '../Image';
-import { spacingGap } from '@/ui/theme/spacing';
 import { Tag } from '../Tag';
 import Checkbox from '../Checkbox';
+import { IAtomicalItem } from '@/background/service/interfaces/api';
 // import Checkbox from '../Checkbox';
 
 export interface ARC20NFTCardProps {
-  tokenBalance: IAtomicalBalanceItem;
+  tokenBalance: IAtomicalItem;
   onClick?: () => void;
   checkbox?: boolean;
   selectvalues?: string[];
@@ -26,7 +20,7 @@ export interface ARC20NFTCardProps {
 
 export default function ARC20NFTCard(props: ARC20NFTCardProps) {
   const {
-    tokenBalance: { ticker, confirmed, data },
+    tokenBalance: { $ticker, value, mint_data, atomical_number, atomical_id },
     checkbox,
     selectvalues,
     onClick
@@ -48,9 +42,9 @@ export default function ARC20NFTCard(props: ARC20NFTCardProps) {
       onClick={onClick}>
       <Column full gap={'xs'}>
         <Row justifyBetween itemsCenter>
-          <Text text={`# ${data.atomical_number.toLocaleString()}`} color="blue" />
+          <Text text={`# ${atomical_number.toLocaleString()}`} color="blue" />
           {checkbox && (
-            <Checkbox value={`${data.atomical_id}`} checked={selectvalues?.includes(`${data.atomical_id}`)} />
+            <Checkbox value={`${atomical_id}`} checked={selectvalues?.includes(`${atomical_id}`)} />
           )}
         </Row>
         <Row style={{ borderTopWidth: 1, borderColor: 'rgba(255,255,255,0.1)' }} />
@@ -59,7 +53,7 @@ export default function ARC20NFTCard(props: ARC20NFTCardProps) {
           <Row justifyCenter>
             {type === 'nft' ? <Image size={24} src={content} /> : <Text text={content} color="textDim" size="xl" />}
           </Row>
-          <Text text={`${confirmed} sats`} size="xs" />
+          <Text text={`${value} sats`} size="xs" />
         </Column>
       </Column>
     </Card>

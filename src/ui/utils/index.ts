@@ -1,4 +1,4 @@
-import { IAtomicalBalanceItem } from '@/background/service/interfaces/api';
+import { IAtomicalItem } from '@/background/service/interfaces/api';
 import BigNumber from 'bignumber.js';
 import { toUnicode } from 'punycode';
 import { useLocation } from 'react-router-dom';
@@ -199,11 +199,11 @@ export function flattenObject(ob: any = {}) {
 
   for (const i in ob) {
     if (Object.prototype.hasOwnProperty.call(ob, i)) {
-      if (typeof ob[i] == "object" && ob[i] !== null) {
+      if (typeof ob[i] == 'object' && ob[i] !== null) {
         const flatObject = flattenObject(ob[i]);
         for (const x in flatObject) {
           if (Object.prototype.hasOwnProperty.call(flatObject, x)) {
-            toReturn[i + "." + x] = flatObject[x];
+            toReturn[i + '.' + x] = flatObject[x];
           }
         }
       } else {
@@ -225,17 +225,17 @@ export function findValueInDeepObject(obj: any, key: string): any | undefined {
 }
 
 
-export function returnImageType(item: IAtomicalBalanceItem): { type: string; content: string; tag: string } {
+export function returnImageType(item: IAtomicalItem): { type: string; content: string; tag: string } {
   let ct, content, type, tag;
-  if (item.realm) {
+  if (item.$realm) {
     type = 'realm';
     tag  = 'Realm';
-    content = item.full_realm_name!.toLowerCase().startsWith('xn--')
-      ? toUnicode(item.full_realm_name!)
-      : item.full_realm_name;
+    content = item.$full_realm_name!.toLowerCase().startsWith('xn--')
+      ? toUnicode(item.$full_realm_name!)
+      : item.$full_realm_name;
   } else {
     type = 'nft';
-    ct = findValueInDeepObject(item.data.mint_data.fields!, '$ct');
+    ct = findValueInDeepObject(item.mint_data?.fields, '$ct');
     if (ct) {
       if (ct.endsWith('webp')) {
         ct = 'image/webp';
@@ -248,7 +248,7 @@ export function returnImageType(item: IAtomicalBalanceItem): { type: string; con
       } else if (ct.endsWith('gif')) {
         ct = 'image/gif';
       }
-      const data = findValueInDeepObject(item.data.mint_data.fields!, '$d');
+      const data = findValueInDeepObject(item.mint_data?.fields, '$d');
       const b64String = Buffer.from(data, 'hex').toString('base64');
       content = `data:${ct};base64,${b64String}`;
       tag = ct;

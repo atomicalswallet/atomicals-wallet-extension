@@ -33,6 +33,10 @@ export class MempoolService {
     return this.httpGet(`/api/address/${address}/utxo`, {});
   }
 
+  async getBlockHeight(): Promise<number> {
+    return this.httpGet('/api/blocks/tip/height', { });
+  }
+
   httpGet = async (route: string, params: any) => {
     let url = this.getHost() + route;
     let c = 0;

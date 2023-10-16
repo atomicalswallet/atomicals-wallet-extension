@@ -1,23 +1,16 @@
 import { useEffect, useMemo, useState } from 'react';
 
-import { AddressTokenSummary, TransferFtConfigInterface } from '@/shared/types';
+import { AddressTokenSummary } from '@/shared/types';
 import { Button, Column, Content, Grid, Header, Image, Input, Layout, Row, Text } from '@/ui/components';
-import BRC20Preview from '@/ui/components/BRC20Preview';
-import { Empty } from '@/ui/components/Empty';
 import { useAccountBalance, useAtomicals, useCurrentAccount } from '@/ui/state/accounts/hooks';
-import { colors } from '@/ui/theme/colors';
-import { findValueInDeepObject, isValidAddress, returnImageType, useLocationState, useWallet } from '@/ui/utils';
+import { isValidAddress, returnImageType, useLocationState, useWallet } from '@/ui/utils';
 
 import { useNavigate } from '../MainRoute';
 import ARC20NFTCard from '@/ui/components/ARC20NFTCard';
 import { LoadingOutlined } from '@ant-design/icons';
 import Checkbox from '@/ui/components/Checkbox';
-import { useBitcoinTx, useCreateARC20TxCallback, useCreateARCNFTTxCallback } from '@/ui/state/transactions/hooks';
+import { useBitcoinTx, useCreateARCNFTTxCallback } from '@/ui/state/transactions/hooks';
 import { FeeRateBar } from '@/ui/components/FeeRateBar';
-import { update } from 'lodash';
-import { IAtomicalBalanceItem, IAtomicalBalances } from '@/background/service/interfaces/api';
-import { toUnicode } from 'punycode';
-import { use } from 'i18next';
 
 interface LocationState {
   ticker: string;
@@ -57,19 +50,15 @@ function Preview(props: { selectValues: string[]; updateStep: (step: Step) => vo
 
     setDisabled(false);
   }, [toInfo, feeRate]);
-  console.log('toInfo', toInfo);
 
   const selectAtomcals = useMemo(() => {
-    if (!atomicals.atomicalBalances) return [];
-    return Object.keys(atomicals.atomicalBalances as IAtomicalBalances)
-      .map((key) => (atomicals.atomicalBalances as IAtomicalBalances)[key])
+    if (!atomicals.atomicalNFTs) return [];
+    return atomicals.atomicalNFTs
       .filter((o) => selectValues.includes(o.atomical_id));
   }, [atomicals]);
 
-  const utxos = atomicals.atomicalsUtxos.filter((o) => selectValues.includes(`${o.atomicals[0]}`));
+  const utxos = atomicals.atomicalsUTXOs.filter((o) => selectValues.includes(`${o.atomicals?.[0]}`));
 
-  console.log('utxos', utxos, selectValues);
-  console.log('utxos', atomicals.atomicalsUtxos);
   const outputs = useMemo(() => {
     const outputs = utxos.map((utxo) => ({
       value: utxo.value,
@@ -82,10 +71,9 @@ function Preview(props: { selectValues: string[]; updateStep: (step: Step) => vo
       selectedUtxos: utxos ?? [],
       outputs: outputs ?? []
     };
-    const rawTxInfo = await createARC20NFTTx(obj, toInfo, atomicals.nonAtomicalUtxos, feeRate, false);
-    console.log('rawTxInfo', rawTxInfo);
+    const rawTxInfo = await createARC20NFTTx(obj, toInfo, atomicals.regularsUTXOs, feeRate, false);
     if (rawTxInfo && rawTxInfo.fee) {
-      if (rawTxInfo.fee > atomicals.nonAtomUtxosValue) {
+      if (rawTxInfo.fee > atomicals.regularsValue) {
         setError(`Fee ${rawTxInfo.fee} sats Insufficient BTC balance`);
         return;
       }
@@ -118,7 +106,7 @@ function Preview(props: { selectValues: string[]; updateStep: (step: Step) => vo
             <Column mt="lg">
               <Text text="NFTs" preset="regular" color="textDim" />
               <Text
-                text={`All Include: ${selectAtomcals.map((o) => o.confirmed).reduce((pre, cur) => pre + cur, 0)} sats`}
+                text={`All Include: ${selectAtomcals.map((o) => o.value).reduce((pre, cur) => pre + cur, 0)} sats`}
                 color="textDim"
                 size="xs"
               />
@@ -135,7 +123,7 @@ function Preview(props: { selectValues: string[]; updateStep: (step: Step) => vo
                       {type === 'realm' ? <Text text={content} /> : <Image src={content} size={24} />}
                     </Column>
                     <Text text={`# ${data.atomical_number}`} textCenter color="textDim" size="xs" />
-                    <Text text={data.confirmed} textCenter color="textDim" size="xs" />
+                    <Text text={data.value} textCenter color="textDim" size="xs" />
                   </Grid>
                 );
               })}
@@ -207,7 +195,6 @@ const ARC20NFTScreen = () => {
   const [checkedList, setCheckedList] = useState<string[]>([]);
 
   const onChange = (checkedValues: any) => {
-    console.log('checked = ', checkedValues);
     setCheckedList(checkedValues);
   };
 
@@ -224,14 +211,13 @@ const ARC20NFTScreen = () => {
         }}
       />
       <Content>
-        {atomicals.atomicalBalances ? (
+        {atomicals.atomicalsValue ? (
           <Column full justifyBetween>
             <Column>
               <Text text="Select NFT to send" preset="regular" color="textDim" />
               <Row style={{ flexWrap: 'wrap', maxHeight: 'calc(100vh - 170px)', overflow: 'auto' }} gap="sm" full>
                 <Checkbox.Group onChange={onChange} value={checkedList}>
-                  {Object.values(atomicals.atomicalBalances)
-                    .filter((d) => d.type === 'NFT')
+                  {atomicals.atomicalNFTs
                     .map((data, index) => {
                       return <ARC20NFTCard key={index} checkbox selectvalues={checkedList} tokenBalance={data} />;
                     })}

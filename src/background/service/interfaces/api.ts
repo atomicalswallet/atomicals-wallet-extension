@@ -1,6 +1,4 @@
-import { Inscription, UTXO_ATOM } from '@/shared/types';
 import { UTXO } from './utxo';
-import { MempoolUtxo } from '../mempool';
 
 export { UTXO };
 
@@ -68,38 +66,13 @@ export interface IAtomicalBalanceSummary {
   utxos: any[];
 }
 
-export interface ISelectedUtxo {
-  txid: string;
-  index: number;
-  value: number;
-  height: number;
-  script: any;
-  atomicals: string[];
-}
-
-export interface AmountToSend {
-  address: string;
-  value: number;
-}
-
-export interface IAtomicalsInfo {
-  confirmed: number;
-  type: 'FT' | 'NFT';
-  utxos: Array<{
-    txid: string;
-    script: any;
-    value: number;
-    index: number;
-    height: number;
-  }>;
-}
 
 export interface IAtomicalBalances {
-  [AtomId: string]: IAtomicalBalanceItem;
+  [AtomId: string]: IAtomicalItem;
 }
 
 enum TickerStatus {
-  'verified' = 'verified'
+  'verified' = 'verified',
 }
 
 export interface TickerCandidate {
@@ -110,67 +83,325 @@ export interface TickerCandidate {
   txid: string;
 }
 
-export interface IAtomicalBalanceItem {
-  atomical_id: string;
-  atomical_number: number;
-  confirmed: number;
+
+// export interface IAtomicalBalanceItemData {
+//   $bitwork?: {
+//     bitworkc?: string;
+//     birworkr?: string;
+//   };
+//   $max_mints?: number;
+//   $max_supply?: number;
+//   $mint_amount?: number;
+//   $mint_bitworkc?: string;
+//   $mint_height?: number;
+//   $request_ticker?: string;
+//   $request_ticker_status?: {
+//     status?: TickerStatus;
+//     note: string;
+//     verified_atomical_id: string;
+//   };
+//   $ticker: string;
+//   $ticker_candidate: TickerCandidate[];
+//   atomical_id: string;
+//   atomical_number: number;
+//   atomical_ref: string;
+//   confirmed: boolean;
+//   mint_data?: any; // todo
+//   mint_info?: MintInfo; // dodo
+//   subtype: 'decentralized';
+//   type: 'FT' | 'NFT';
+//   // todo
+//   $container?: string;
+//   $realm?: string;
+// }
+
+export interface Bitwork {
+  bitworkc?: string;
+  bitworkr?: string;
+}
+
+export interface Legal {
+  terms: string;
+}
+
+export interface Meta {
+  name: string;
+  description: string;
+  legal: Legal;
+}
+
+export interface Args {
+  mint_amount: number;
+  mint_height: number;
+  max_mints: number;
+  mint_bitworkc: string;
   request_ticker: string;
-  data: any;
-  realm?:string;
-  full_realm_name?:string;
-  request_ticker_status: {
-    status: TickerStatus;
-    note: string;
-    verified_atomical_id: string;
+  bitworkc: string;
+  nonce: number;
+  time: number;
+}
+
+export interface MintInfo {
+  commit_txid: string;
+  commit_index: number;
+  commit_location: string;
+  commit_tx_num: number;
+  commit_height: number;
+  reveal_location_txid: string;
+  reveal_location_index: number;
+  reveal_location: string;
+  reveal_location_tx_num: number;
+  reveal_location_height: number;
+  reveal_location_header: string;
+  reveal_location_blockhash: string;
+  reveal_location_scripthash: string;
+  reveal_location_script: string;
+  reveal_location_value: number;
+  args: Args;
+  meta: Meta;
+  ctx: {};
+  reveal_location_address?: string;
+  blockheader_info?: {
+    version?: number;
+    prevHash?: string;
+    merkleRoot?: string;
+    timestamp?: number;
+    bits?: number;
+    nonce?: number;
   };
-  subtype: 'decentralized';
-  ticker: string;
-  ticker_candidate: TickerCandidate[];
-  type: 'FT' | 'NFT';
+  $request_realm?: string;
+  $request_subrealm?: string;
+  $request_container?: string;
+  $request_ticker?: string;
+  $pid?: string;
+  $mint_bitworkc: string;
+  $bitwork: Bitwork;
+}
+
+export interface Location {
+  location: string;
+  txid: string;
+  index: number;
+  scripthash: string;
+  value: number;
+  script: string;
+  address?: string;
+  atomicals_at_location?: any[];
+  tx_num?: number;
+  adddress?: string;
+}
+
+export interface LocationInfo {
+  locations: Location[];
+}
+
+export interface MintDataSummary {
+  fields: { [key: string]: any };
+}
+
+export interface StateInfo {
+}
+
+export interface RuleSet {
+  pattern: string;
+  outputs: Array<{
+    v: number;
+    s: string;
+  }>;
+}
+
+export interface ApplicableRule {
+  rule_set_txid: string;
+  rule_set_height: number;
+  rule_valid_from_height: number;
+  matched_rule: RuleSet;
+}
+
+export interface SubrealmCandidate {
+  tx_num: number;
+  atomical_id: string;
+  txid: string;
+  commit_height: number;
+  reveal_location_height: number;
+  payment?: string;
+  payment_type: string;
+  make_payment_from_height: number;
+  payment_due_no_later_than_height: string;
+  applicable_rule?: ApplicableRule;
+}
+
+export interface RequestSubrealmStatus {
+  status:
+    | 'verified'
+    | 'expired_revealed_late'
+    | 'expired_payment_not_received'
+    | 'claimed_by_other'
+    | 'invalid_request_subrealm_no_matched_applicable_rule'
+    | 'pending_awaiting_confirmations_payment_received_prematurely'
+    | 'pending_awaiting_confirmations_for_payment_window'
+    | 'pending_awaiting_confirmations'
+    | 'pending_awaiting_payment'
+    | string;
+  verified_atomical_id?: string;
+  claimed_by_atomical_id?: string;
+  pending_candidate_atomical_id?: string;
+  pending_claimed_by_atomical_id?: string;
+  note?: string;
+}
+
+export interface RequestNameStatus {
+  status:
+    | 'verified'
+    | 'expired_revealed_late'
+    | 'claimed_by_other'
+    | 'pending_candidate'
+    | 'pending_claimed_by_other'
+    | string;
+  verified_atomical_id?: string;
+  claimed_by_atomical_id?: string;
+  pending_candidate_atomical_id?: string;
+  note?: string;
+}
+
+export interface NameCandidate {
+  tx_num: number;
+  atomical_id: string;
+  txid: string;
+  commit_height: number;
+  reveal_location_height: number;
 }
 
 export interface IAtomicalBalanceItemData {
-  $bitwork: {
-    bitworkc: string;
-    birworkr?: string;
-  };
-  $max_mints: number;
-  $max_supply: number;
-  $mint_amount: number;
-  $mint_bitworkc: string;
-  $mint_height: number;
-  $request_ticker: string;
-  $request_ticker_status: {
-    status: TickerStatus;
-    note: string;
-    verified_atomical_id: string;
-  };
-  $ticker: string;
-  $ticker_candidate: TickerCandidate[];
+  confirmed: boolean;
   atomical_id: string;
   atomical_number: number;
   atomical_ref: string;
-  confirmed: boolean;
-  mint_data?: any; // todo
-  mint_info?: any; // dodo
-  subtype: 'decentralized';
-  type: 'FT' | 'NFT';
-  // todo
-
-  $container?: string;
+  type: 'NFT' | 'FT';
+  subtype?:
+    | 'request_realm'
+    | 'realm'
+    | 'request_subrealm'
+    | 'subrealm'
+    | 'request_container'
+    | 'container'
+    | 'direct'
+    | 'decentralized';
+  location_info_obj?: LocationInfo;
+  mint_info?: MintInfo;
+  mint_data?: MintDataSummary;
+  state_info?: StateInfo;
+  // Relationships
+  $relns?: { [key: string]: any };
+  // Bitwork proof of work
+  $bitwork?: Bitwork;
+  // realms
+  $request_realm_status?: RequestNameStatus;
+  $realm_candidates?: NameCandidate[];
+  $request_realm?: string;
   $realm?: string;
+  // Subrealm
+  $full_realm_name?: string; // applies to realms and subrealms both
+  $request_full_realm_name?: string;
+  $subrealm_candidates?: SubrealmCandidate[];
+  $request_subrealm_status?: RequestSubrealmStatus;
+  $request_subrealm?: string;
+  $pid?: string;
+  $subrealm?: string;
+  // tickers
+  $max_supply?: number;
+  $mint_height?: number;
+  $mint_amount?: number;
+  $max_mints?: number;
+  $mint_bitworkc?: string;
+  $mint_bitworkr?: string;
+  $ticker_candidates?: NameCandidate[];
+  $request_ticker_status?: RequestNameStatus;
+  $request_ticker?: string;
+  $ticker?: string;
+  // containers
+  $request_container_status?: RequestNameStatus;
+  $container_candidates?: NameCandidate[];
+  $request_container?: string;
+  $container?: string;
 }
 
-export interface AtomicalsInfo {
-  atomicalConfirmed: number;
-  atomicalBalances?: IAtomicalBalances;
-  atomicalsUtxos: ISelectedUtxo[];
-  ordinalItems: Inscription[];
-  allUtxos: UTXO_ATOM[];
-  nonAtomicalUtxos: UTXO[];
-  nonAtomUtxosValue: number;
-  ordinalSats: number;
-  atomicalUnconfirmed: number;
-  mempoolUtxo: MempoolUtxo[];
-  mempoolBalance: number;
+export interface IAtomicalItem {
+  confirmed: boolean;
+  value: number;
+  atomical_id: string;
+  atomical_number: number;
+  atomical_ref: string;
+  type: 'NFT' | 'FT';
+  subtype?:
+    | 'request_realm'
+    | 'realm'
+    | 'request_subrealm'
+    | 'subrealm'
+    | 'request_container'
+    | 'container'
+    | 'direct'
+    | 'decentralized';
+  location_info_obj?: LocationInfo;
+  mint_info?: MintInfo;
+  mint_data?: MintDataSummary;
+  state_info?: StateInfo;
+  // Relationships
+  $relns?: { [key: string]: any };
+  // Bitwork proof of work
+  $bitwork?: Bitwork;
+  // realms
+  $request_realm_status?: RequestNameStatus;
+  $realm_candidates?: NameCandidate[];
+  $request_realm?: string;
+  $realm?: string;
+  // Subrealm
+  $full_realm_name?: string; // applies to realms and subrealms both
+  $request_full_realm_name?: string;
+  $subrealm_candidates?: SubrealmCandidate[];
+  $request_subrealm_status?: RequestSubrealmStatus;
+  $request_subrealm?: string;
+  $pid?: string;
+  $subrealm?: string;
+  // tickers
+  $max_supply?: number;
+  $mint_height?: number;
+  $mint_amount?: number;
+  $max_mints?: number;
+  $mint_bitworkc?: string;
+  $mint_bitworkr?: string;
+  $ticker_candidates?: NameCandidate[];
+  $request_ticker_status?: RequestNameStatus;
+  $request_ticker?: string;
+  $ticker?: string;
+  // containers
+  $request_container_status?: RequestNameStatus;
+  $container_candidates?: NameCandidate[];
+  $request_container?: string;
+  $container?: string;
+}
+
+
+export type IMergedAtomicals = UTXO & {
+  atomicals: IAtomicalItem[];
+}
+
+
+export interface IWalletBalance {
+  atomicalMerged: IMergedAtomicals[];
+  atomicalNFTs: IAtomicalItem[];
+  scripthash: string;
+  address: string;
+  atomicalsUTXOs: UTXO[];
+  atomicalsValue?: number;
+  regularsUTXOs: UTXO[];
+  atomicalFTs: (IAtomicalItem & { utxos: UTXO[] })[];
+  ordinalsValue: number;
+  confirmedUTXOs: UTXO[];
+  unconfirmedUTXOs: UTXO[];
+  ordinalsUTXOs: UTXO[];
+  atomicalsWithOrdinalsValue: number;
+  confirmedValue: number;
+  regularsValue: number;
+  unconfirmedValue: number;
+  atomicalsWithOrdinalsUTXOs: UTXO[];
 }

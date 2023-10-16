@@ -1,8 +1,7 @@
 /* eslint-disable quotes */
 
 /* constants pool */
-import { AddressType, Chain, NetworkType, RestoreWalletType } from '../types';
-
+import { AddressType, AtomNetworkType, Chain, NetworkType, RestoreWalletType } from '../types';
 export enum CHAINS_ENUM {
   BTC = 'BTC'
 }
@@ -226,6 +225,12 @@ export const NETWORK_TYPES = [
   { value: NetworkType.TESTNET, label: 'TESTNET', name: 'testnet', validNames: ['testnet'] }
 ];
 
+export const ATOM_NETWORK_TYPES = [
+  { value: AtomNetworkType.ATOMICALS, label: 'Mainnet(Atomicals)', name: 'livenet', validNames: [0, 'livenet', 'mainnet'] },
+  { value: AtomNetworkType.WIZZ, label: 'Mainnet(Wizz)', name: 'testnet', validNames: ['testnet'] },
+  { value: AtomNetworkType.ATOMICALS_MARKET, label: 'Mainnet(Atomicalmarket)', name: 'testnet', validNames: ['testnet'] },
+];
+
 export const MINIMUM_GAS_LIMIT = 21000;
 
 export enum WATCH_ADDRESS_CONNECT_TYPE {
@@ -290,7 +295,9 @@ export const GITHUB_URL = 'https://github.com/AstroxNetwork/extension';
 export const DISCORD_URL = 'https://discord.gg/7YxK2ytSxn';
 export const TWITTER_URL = 'https://twitter.com/atomicalswallet';
 export const ELECTRUMX_WSS = 'wss://electrumx.atomicals.xyz:50012'; //'ws://18.139.208.6:50001'// 'wss://electrumx.atomicals.xyz:50012';
+// export const ELECTRUMX_HTTP_PROXY = 'https://electrumx.atomicalmarket.com';
 export const ELECTRUMX_HTTP_PROXY = 'https://ep.atomicals.xyz/proxy';
+// export const ELECTRUMX_HTTP_PROXY = 'https://ep.atomicals.xyz/proxy';
 
 export const CHANNEL = process.env.channel!;
 export const VERSION = process.env.release!;

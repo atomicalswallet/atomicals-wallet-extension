@@ -1,5 +1,9 @@
-import { IAtomicalsInfo, ISelectedUtxo } from '@/background/service/interfaces/api';
 import { CHAINS_ENUM } from './constant';
+import { UTXO as UTXOAtom } from '../background/service/interfaces/api';
+
+export enum LOCAL_KEY {
+  ELECTRUMX_HTTP_PROXY = 'ELECTRUMX_HTTP_PROXY'
+}
 
 export enum AddressType {
   P2PKH,
@@ -14,6 +18,12 @@ export enum NetworkType {
   MAINNET,
   TESTNET
 }
+
+export enum AtomNetworkType {
+  WIZZ = 'https://wizz.network',
+  ATOMICALS = 'https://electrumx.atomicals.xyz',
+  ATOMICALS_MARKET = 'https://electrumx.atomicalmarket.com',
+ }
 
 export enum RestoreWalletType {
   WIZZ,
@@ -127,18 +137,6 @@ export interface UTXO {
   }[];
 }
 
-export interface UTXO_ATOM {
-  txid: string;
-  txId: string;
-  index: number;
-  vout: number;
-  value: number;
-  script?: string;
-  height?: number;
-  outputIndex: number;
-  atomicals?: any[];
-  ticker?: string;
-}
 
 export interface AmountToSend {
   address: string;
@@ -146,8 +144,8 @@ export interface AmountToSend {
 }
 
 export interface TransferFtConfigInterface {
-  atomicalsInfo: IAtomicalsInfo;
-  selectedUtxos: ISelectedUtxo[];
+  selectedUtxos: UTXOAtom[];
+  type: 'FT' | 'NFT';
   outputs: Array<AmountToSend>;
 }
 

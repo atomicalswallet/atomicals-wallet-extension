@@ -7,7 +7,7 @@ import { AppState } from '..';
 import { useAppDispatch, useAppSelector } from '../hooks';
 import { useCurrentKeyring } from '../keyrings/hooks';
 import { accountActions } from './reducer';
-import { useTools } from '@/ui/components/ActionComponent';
+import { useAtomNetworkType } from '../settings/hooks';
 
 export function useAccountsState(): AppState['accounts'] {
   return useAppSelector((state) => state.accounts);
@@ -175,7 +175,8 @@ export function useFetchBalanceCallback() {
         address: currentAccount.address,
         amount: _accountBalance.amount,
         btc_amount: _accountBalance.btc_amount,
-        inscription_amount: _accountBalance.inscription_amount
+        inscription_amount: _accountBalance.inscription_amount,
+        atomical_amount: '',
       })
     );
     if (cachedBalance.amount !== _accountBalance.amount) {
@@ -190,24 +191,29 @@ export function useAtomicalsCallback() {
   const wallet = useWallet();
   const currentAccount = useCurrentAccount();
   const balance = useAccountBalance();
+  const networkType = useAtomNetworkType();
 
   return useCallback(async () => {
     if (!currentAccount.address) return;
     // const _utxo = await wallet.getUtxo(currentAccount.address);
     // console.log({ _utxo });
+    console.log('networkType getAtom', networkType)
     const res = await wallet.getAtomicals(
-      currentAccount.address
-      // 'bc1pzxmvax02krvgw0tc06v7dz34zdvz9zynehcsfxky32h9zwg4nz4sjlq3qc'
+      currentAccount.address,
+      // 'bc1pu29wvlltettd2zyugxppa80ry0amcsy22xcl9484lfvpt4jcgg3sacnj8m'
+      networkType,
     );
     // console.log({ _utxo });
-    const btc_amount = (res.nonAtomUtxosValue / (10000 * 10000)).toString();
-    const amount = (res.mempoolBalance / (10000 * 10000)).toString();
+    const btc_amount = (res.regularsValue / (10000 * 10000)).toString();
+    const amount = (res.confirmedValue / (10000 * 10000)).toString();
+    const atomical_amount = (res.atomicalsValue! / (10000 * 10000)).toString();
     dispatch(
       accountActions.setBalance({
         address: currentAccount.address,
         amount: amount,
         btc_amount,
-        inscription_amount: ''
+        inscription_amount: '',
+        atomical_amount,
       })
     );
     dispatch(accountActions.setAtomicals(res));
@@ -215,5 +221,5 @@ export function useAtomicalsCallback() {
     //   wallet.expireUICachedData(currentAccount.address);
     //   dispatch(accountActions.expireHistory());
     // }
-  }, [dispatch, wallet, currentAccount, balance]);
+  }, [dispatch, wallet, currentAccount, balance, networkType]);
 }

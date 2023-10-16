@@ -9,20 +9,21 @@ import { Card } from '../Card';
 import { Column } from '../Column';
 import { Row } from '../Row';
 import { Text } from '../Text';
-import { IAtomicalBalanceItem } from '@/background/service/interfaces/api';
 import { findValueInDeepObject } from '@/ui/utils';
 import { Image } from '../Image';
+import { IAtomicalItem } from '@/background/service/interfaces/api';
 
 export interface ARC20BalanceCardProps {
-  tokenBalance: IAtomicalBalanceItem;
+  tokenBalance: IAtomicalItem;
   onClick?: () => void;
 }
 
 export default function ARC20BalanceCard(props: ARC20BalanceCardProps) {
   const {
-    tokenBalance: { ticker, confirmed, data },
+    tokenBalance: { $ticker, value, mint_data },
     onClick
   } = props;
+
   return (
     <Card
       style={{
@@ -41,11 +42,11 @@ export default function ARC20BalanceCard(props: ARC20BalanceCardProps) {
             <Image
               size={16}
               src={`data:image/png;base64,${Buffer.from(
-                findValueInDeepObject(data.mint_data?.fields, '$d'),
+                findValueInDeepObject(mint_data?.fields, '$d'),
                 'hex'
               ).toString('base64')}`}
             />
-            <Text text={ticker} color="blue" />
+            <Text text={$ticker} color="blue" />
           </Row>
           <Tooltip
             title="The transferable amount is the balance that has been inscribed into transfer inscriptions but has not yet been sent."
@@ -64,7 +65,7 @@ export default function ARC20BalanceCard(props: ARC20BalanceCardProps) {
         <Row style={{ borderTopWidth: 1, borderColor: 'rgba(255,255,255,0.1)' }} />
         <Row justifyBetween itemsCenter>
           <Text text="Balance:" color="textDim" size="xs" />
-          <Text text={confirmed} size="xs" />
+          <Text text={value} size="xs" />
         </Row>
       </Column>
     </Card>

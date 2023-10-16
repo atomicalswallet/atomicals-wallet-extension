@@ -6,6 +6,7 @@ export enum WalletTabScreenTabKey {
   // ARC20,
   FT,
   NFT,
+  MERGED,
 
 }
 export interface UIState {

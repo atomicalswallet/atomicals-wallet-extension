@@ -1,7 +1,7 @@
 import { Psbt } from 'bitcoinjs-lib';
 import { useCallback, useMemo } from 'react';
 import * as bitcoin from 'bitcoinjs-lib';
-import { RawTxInfo, ToAddressInfo, TransferFtConfigInterface, UTXO_ATOM } from '@/shared/types';
+import { RawTxInfo, ToAddressInfo, TransferFtConfigInterface } from '@/shared/types';
 import { useTools } from '@/ui/components/ActionComponent';
 import { calculateFTFundsRequired, satoshisToAmount, satoshisToBTC, sleep, useWallet } from '@/ui/utils';
 
@@ -11,7 +11,7 @@ import { accountActions } from '../accounts/reducer';
 import { useAppDispatch, useAppSelector } from '../hooks';
 import { transactionsActions } from './reducer';
 import { detectAddressTypeToScripthash, toXOnly } from '@/background/service/utils';
-import { ISelectedUtxo } from '@/background/service/interfaces/api';
+import { UTXO } from '@/background/service/interfaces/utxo';
 
 export function useTransactionsState(): AppState['transactions'] {
   return useAppSelector((state) => state.transactions);
@@ -86,18 +86,16 @@ export function useCreateARC20TxCallback() {
     async (
       transferOptions: TransferFtConfigInterface,
       toAddressInfo: ToAddressInfo,
-      nonAtomUtxos: UTXO_ATOM[],
+      nonAtomUtxos: UTXO[],
       satsbyte: number,
       preload: boolean
     ): Promise<RawTxInfo | undefined> => {
-      if (transferOptions.atomicalsInfo.type !== 'FT') {
+      if (transferOptions.type !== 'FT') {
         throw 'Atomical is not an FT. It is expected to be an FT type';
       }
       // const accounts =
       const pubkey = account.pubkey;
-      console.log('pubkey', pubkey);
       const xpub = (toXOnly(Buffer.from(pubkey, 'hex')) as Buffer).toString('hex');
-      console.log('xpub', xpub);
       const psbt = new bitcoin.Psbt({ network: bitcoin.networks.bitcoin });
       let tokenBalanceIn = 0;
       let tokenBalanceOut = 0;
@@ -133,8 +131,6 @@ export function useCreateARC20TxCallback() {
         tokenBalanceOut += output.value;
         tokenOutputsLength++;
       }
-      console.log({ tokenBalanceIn });
-      console.log({ tokenBalanceOut });
       // TODO DETECT THAT THERE NEEDS TO BE CHANGE ADDED AND THEN
       if (tokenBalanceIn !== tokenBalanceOut) {
         console.log('Invalid input and output does not match for token. Developer Error.');
@@ -157,10 +153,9 @@ export function useCreateARC20TxCallback() {
         expectedFundinng = expectedSatoshisDeposit;
       }
       // add nonAtomUtxos least to expected deposit value
-      console.log('expectedFundinng', expectedFundinng);
       if (!preload) {
         let addedValue = 0;
-        const addedInputs: UTXO_ATOM[] = [];
+        const addedInputs: UTXO[] = [];
 
         for (let i = 0; i < nonAtomUtxos.length; i++) {
           const utxo = nonAtomUtxos[i];
@@ -182,8 +177,6 @@ export function useCreateARC20TxCallback() {
             });
           }
         }
-        console.log(addedValue);
-        console.log(addedInputs);
 
         if (addedValue - expectedSatoshisDeposit >= 546) {
           psbt.addOutput({
@@ -196,7 +189,6 @@ export function useCreateARC20TxCallback() {
         const s = await wallet.signPsbtReturnHex(psbtHex, { autoFinalized: true });
         const signPsbt = Psbt.fromHex(s);
         const tx = signPsbt.extractTransaction();
-        console.log('signPsbt start', psbtHex);
 
         const rawTxInfo: RawTxInfo = {
           psbtHex,
@@ -219,18 +211,16 @@ export function useCreateARCNFTTxCallback() {
   return useCallback(
     async (
       transferOptions: {
-        selectedUtxos: ISelectedUtxo[];
+        selectedUtxos: UTXO[];
         outputs: { address: string; value: number }[];
       },
       toAddressInfo: ToAddressInfo,
-      nonAtomUtxos: UTXO_ATOM[],
+      nonAtomUtxos: UTXO[],
       satsbyte: number,
       preload: boolean
     ): Promise<RawTxInfo | undefined> => {
       const pubkey = account.pubkey;
-      console.log('pubkey', pubkey);
       const xpub = (toXOnly(Buffer.from(pubkey, 'hex')) as Buffer).toString('hex');
-      console.log('xpub', xpub);
       const psbt = new bitcoin.Psbt({ network: bitcoin.networks.bitcoin });
 
       try {
@@ -283,7 +273,7 @@ export function useCreateARCNFTTxCallback() {
       }
 
       let addedValue = 0;
-      const addedInputs: UTXO_ATOM[] = [];
+      const addedInputs: UTXO[] = [];
 
       for (let i = 0; i < nonAtomUtxos.length; i++) {
         const utxo = nonAtomUtxos[i];
@@ -305,8 +295,6 @@ export function useCreateARCNFTTxCallback() {
           });
         }
       }
-      console.log(addedValue);
-      console.log(addedInputs);
 
       if (addedValue - expectedSatoshisDeposit >= 546) {
         psbt.addOutput({
@@ -320,7 +308,6 @@ export function useCreateARCNFTTxCallback() {
       const signPsbt = Psbt.fromHex(s);
       const tx = signPsbt.extractTransaction();
 
-      console.log('signPsbt start', psbtHex);
       const rawTxInfo: RawTxInfo = {
         psbtHex,
         rawtx: tx.toHex(),
