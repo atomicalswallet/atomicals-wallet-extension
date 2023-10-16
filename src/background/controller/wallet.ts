@@ -1302,14 +1302,18 @@ export class WalletController extends BaseController {
   //   this.atomicalApi.electrumApi = atomicalApi;
   // }
 
-  getAtomicals = async (address: string, network?: string): Promise<IWalletBalance> => {
-    if(network) {
-      this.atomicalApi = new AtomicalService(ElectrumApi.createClient(network));
-      console.log('network',network, this.atomicalApi.electrumApi)
+  getAtomicals = async (address: string, host?: string): Promise<IWalletBalance> => {
+    let api;
+    if(host) {
+      // this.atomicalApi = new AtomicalService(ElectrumApi.createClient(network));
+      // api = ElectrumApi.createClient(network)
+      // this.atomicalApi?.electrumApi.setUrl(host)
+      api = this.atomicalApi!.electrumApi
+    } else {
+      api = this.atomicalApi!.electrumApi
     }
-    const api = this.atomicalApi!.electrumApi
-      const { scripthash } = detectAddressTypeToScripthash(address);
-      const res = await api.atomicalsByScripthash(scripthash, true);
+      const { scripthash, output } = detectAddressTypeToScripthash(address);
+      const res = await api.atomicalsByScripthash(scripthash, false);
       let cursor = 0;
       const size = 100;
       let hasMore = true;
@@ -1320,7 +1324,8 @@ export class WalletController extends BaseController {
         cursor += size;
         hasMore = oldOrdinals.length < v.total;
       }
-      const blockHeight = await mempoolService.getBlockHeight();
+      const txs = await mempoolService.txsMempool(address)
+      const unconfirmedVinSet = new Set(txs!.map((e) => e.vin.map((e) => e.txid + ':' + e.vout)).flat());
       const all = (res.utxos as AtomUtxo[]).sort((a, b) => b.value - a.value);
       const confirmedUTXOs: AtomUtxo[] = [];
       let confirmedValue = 0;
@@ -1336,7 +1341,7 @@ export class WalletController extends BaseController {
       let atomicalsWithOrdinalsValue = 0;
       const mergedUTXOs: AtomUtxo[] = [];
       for (const utxo of all) {
-        if (!!utxo.height && utxo.height < blockHeight!) {
+        if (!unconfirmedVinSet.has(utxo.txid + ':' + utxo.vout)) {
           confirmedValue += utxo.value;
           confirmedUTXOs.push(utxo);
 
@@ -1393,11 +1398,15 @@ export class WalletController extends BaseController {
           }
         } else if (atomical.type === 'FT') {
           const v = atomicalFTs.find((e) => e.$ticker === atomical.ticker);
+          const utxo = atomicalsUTXOs.find((e) => e.atomicals?.includes(atomical.atomical_id))!;
           if (v) {
-            v.utxos.push(...atomicalsUTXOs.filter((e) => e.atomicals?.includes(atomical.atomical_id)));
+            v.utxos.push({
+              ...utxo,
+              atomicals: [item],
+            });
             v.value += atomical.confirmed;
           } else {
-            atomicalFTs.push({ ...item, utxos: atomicalsUTXOs.filter((e) => e.atomicals?.includes(atomical.atomical_id)) });
+            atomicalFTs.push({ ...item, utxos: [{ ...utxo, atomicals: [item] }] });
           }
         } else if (atomical.type === 'NFT') {
           atomicalNFTs.push(item);
@@ -1405,6 +1414,7 @@ export class WalletController extends BaseController {
       }
       const balance: IWalletBalance = {
         address,
+        output,
         scripthash,
         atomicalFTs,
         atomicalNFTs,

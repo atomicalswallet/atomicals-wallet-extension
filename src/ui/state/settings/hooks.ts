@@ -8,6 +8,7 @@ import i18n, { addResourceBundle } from '@/ui/utils/i18n';
 import { AppState } from '..';
 import { useAppDispatch, useAppSelector } from '../hooks';
 import { settingsActions } from './reducer';
+import { accountActions } from '../accounts/reducer';
 
 export function useSettingsState(): AppState['settings'] {
   return useAppSelector((state) => state.settings);
@@ -73,6 +74,8 @@ export function useChangeAtomNetworkTypeCallback() {
   const dispatch = useAppDispatch();
   return useCallback(
     async (type: AtomNetworkType) => {
+      console.log('useChangeAtomNetworkTypeCallback', type)
+      dispatch(accountActions.expireBalance());
       dispatch(
         settingsActions.updateSettings({
           atomNetworkType: type

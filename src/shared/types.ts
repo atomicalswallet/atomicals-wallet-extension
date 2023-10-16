@@ -20,9 +20,9 @@ export enum NetworkType {
 }
 
 export enum AtomNetworkType {
-  WIZZ = 'https://wizz.network',
-  ATOMICALS = 'https://electrumx.atomicals.xyz',
-  ATOMICALS_MARKET = 'https://electrumx.atomicalmarket.com',
+  WIZZ = 'https://wizz.network/proxy',
+  ATOMICALS = 'https://electrumx.atomicals.xyz/proxy',
+  ATOMICALS_MARKET = 'https://electrumx.atomicalmarket.com/proxy',
  }
 
 export enum RestoreWalletType {
@@ -286,6 +286,7 @@ export interface RawTxInfo {
   rawtx: string;
   toAddressInfo?: ToAddressInfo;
   fee?: number;
+  err?: string
 }
 
 export interface WalletConfig {

@@ -1,4 +1,5 @@
 import { MEMPOOL_URL } from '@/shared/constant';
+import { TxItem } from './interfaces/api';
 
 export interface MempoolUtxo {
   txid: string;
@@ -35,6 +36,10 @@ export class MempoolService {
 
   async getBlockHeight(): Promise<number> {
     return this.httpGet('/api/blocks/tip/height', { });
+  }
+
+  async txsMempool(address: string): Promise<TxItem[]> {
+    return this.httpGet(`/api/address/${address}/txs/mempool`, { });
   }
 
   httpGet = async (route: string, params: any) => {

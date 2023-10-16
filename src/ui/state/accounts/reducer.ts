@@ -54,6 +54,7 @@ export const initialState: AccountsState = {
     atomicalMerged: [],
     atomicalNFTs: [],
     scripthash: '',
+    output: '',
     address: '',
     atomicalsUTXOs: [],
     atomicalsValue: undefined,

@@ -21,12 +21,7 @@ import SwitchKeyringScreen from './Account/SwitchKeyringScreen';
 import UnlockScreen from './Account/UnlockScreen';
 import ApprovalScreen from './Approval/ApprovalScreen';
 import ConnectedSitesScreen from './Approval/ConnectedSitesScreen';
-import { InscribeTransferScreen } from './Approval/components/InscribeTransfer';
-import BRC20SendScreen from './BRC20/BRC20SendScreen';
-import BRC20TokenScreen from './BRC20/BRC20TokenScreen';
-import AppTabScrren from './Main/AppTabScreen';
 import BoostScreen from './Main/BoostScreen';
-import DiscoverTabScreen from './Main/DiscoverTabScreen';
 import SettingsTabScreen from './Main/SettingsTabScreen';
 import WalletTabScreen from './Main/WalletTabScreen';
 import WelcomeScreen from './Main/WelcomeScreen';
@@ -39,13 +34,7 @@ import ExportPrivateKeyScreen from './Settings/ExportPrivateKeyScreen';
 import NetworkTypeScreen from './Settings/NetworkTypeScreen';
 import UpgradeNoticeScreen from './Settings/UpgradeNoticeScreen';
 import TestScreen from './Test/TestScreen';
-import HistoryScreen from './Wallet/HistoryScreen';
-import MoonPayScreen from './Wallet/MoonPayScreen';
-import OrdinalsDetailScreen from './Wallet/OrdinalsDetailScreen';
-import OrdinalsTxConfirmScreen from './Wallet/OrdinalsTxConfirmScreen';
-import OrdinalsTxCreateScreen from './Wallet/OrdinalsTxCreateScreen';
 import ReceiveScreen from './Wallet/ReceiveScreen';
-import SplitTxCreateScreen from './Wallet/SplitTxCreateScreen';
 import TxConfirmScreen from './Wallet/TxConfirmScreen';
 import TxCreateScreen from './Wallet/TxCreateScreen';
 import TxFailScreen from './Wallet/TxFailScreen';
@@ -54,6 +43,7 @@ import './index.module.less';
 import ARC20SendScreen from './ARC20/ARC20SendScreen';
 import ARC20NFTScreen from './ARC20/ARC20NFTScreen';
 import ARC20TxConfirmScreen from './ARC20/ARC20TxConfrimScreen';
+import EndPointScreen from './Settings/EndPointScreen';
 
 const routes = {
   BoostScreen: {
@@ -140,6 +130,11 @@ const routes = {
     path: '/settings/network-type',
     element: <NetworkTypeScreen />
   },
+  EndPointScreen: {
+    path:  '/settings/end-point',
+    element: <EndPointScreen />
+  },
+
   ChangePasswordScreen: {
     path: '/settings/password',
     element: <ChangePasswordScreen />

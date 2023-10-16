@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
-import { ADDRESS_TYPES, DISCORD_URL, GITHUB_URL, NETWORK_TYPES, TWITTER_URL } from '@/shared/constant';
+import { ADDRESS_TYPES, ATOM_NETWORK_TYPES, DISCORD_URL, GITHUB_URL, NETWORK_TYPES, TWITTER_URL } from '@/shared/constant';
 import { Card, Column, Content, Footer, Header, Layout, Row, Text } from '@/ui/components';
 import { Button } from '@/ui/components/Button';
 import { Icon } from '@/ui/components/Icon';
@@ -10,11 +10,12 @@ import { useExtensionIsInTab, useOpenExtensionInTab } from '@/ui/features/browse
 import { getCurrentTab } from '@/ui/features/browser/tabs';
 import { useCurrentAccount } from '@/ui/state/accounts/hooks';
 import { useCurrentKeyring } from '@/ui/state/keyrings/hooks';
-import { useNetworkType, useVersionInfo } from '@/ui/state/settings/hooks';
+import { useAtomNetworkType, useNetworkType, useVersionInfo } from '@/ui/state/settings/hooks';
 import { fontSizes } from '@/ui/theme/font';
 import { spacing } from '@/ui/theme/spacing';
 import { useWallet } from '@/ui/utils';
 import { RightOutlined } from '@ant-design/icons';
+import { AtomNetworkType } from '@/shared/types';
 
 interface Setting {
   label?: string;
@@ -61,7 +62,14 @@ const SettingList: Setting[] = [
     route: '/settings/network-type',
     right: true
   },
-
+  {
+    label: 'Change Endpoint',
+    value: AtomNetworkType.ATOMICALS,
+    desc: '',
+    action: 'changeEndPoint',
+    route: '/settings/end-point',
+    right: true
+  },
   {
     label: 'Change Password',
     value: 'Change your lockscreen password',
@@ -92,6 +100,7 @@ export default function SettingsTabScreen() {
   const navigate = useNavigate();
 
   const networkType = useNetworkType();
+  const atomNetworkType = useAtomNetworkType();
 
   const isInTab = useExtensionIsInTab();
 
@@ -115,6 +124,7 @@ export default function SettingsTabScreen() {
   }, []);
 
   const toRenderSettings = SettingList.filter((v) => {
+    console.log(v, ATOM_NETWORK_TYPES)
     if (v.action == 'manage-wallet') {
       v.value = currentKeyring.alianName;
     }
@@ -125,6 +135,10 @@ export default function SettingsTabScreen() {
 
     if (v.action == 'networkType') {
       v.value = NETWORK_TYPES[networkType].label;
+    }
+
+    if (v.action == 'changeEndPoint') {
+      v.value = ATOM_NETWORK_TYPES.find(o => o.value === atomNetworkType)?.label;
     }
 
     if (v.action == 'addressType') {

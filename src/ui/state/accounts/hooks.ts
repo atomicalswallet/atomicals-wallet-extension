@@ -197,7 +197,6 @@ export function useAtomicalsCallback() {
     if (!currentAccount.address) return;
     // const _utxo = await wallet.getUtxo(currentAccount.address);
     // console.log({ _utxo });
-    console.log('networkType getAtom', networkType)
     const res = await wallet.getAtomicals(
       currentAccount.address,
       // 'bc1pu29wvlltettd2zyugxppa80ry0amcsy22xcl9484lfvpt4jcgg3sacnj8m'
@@ -207,12 +206,13 @@ export function useAtomicalsCallback() {
     const btc_amount = (res.regularsValue / (10000 * 10000)).toString();
     const amount = (res.confirmedValue / (10000 * 10000)).toString();
     const atomical_amount = (res.atomicalsValue! / (10000 * 10000)).toString();
+    const inscription_amount = (res.ordinalsValue! / (10000 * 10000)).toString();
     dispatch(
       accountActions.setBalance({
         address: currentAccount.address,
         amount: amount,
         btc_amount,
-        inscription_amount: '',
+        inscription_amount,
         atomical_amount,
       })
     );

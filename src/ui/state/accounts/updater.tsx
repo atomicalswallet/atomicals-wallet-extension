@@ -9,6 +9,7 @@ import { useAppDispatch } from '../hooks';
 import { keyringsActions } from '../keyrings/reducer';
 import { useAccountBalance, useAtomicals, useAtomicalsCallback, useCurrentAccount } from './hooks';
 import { accountActions } from './reducer';
+import { useAtomNetworkType } from '../settings/hooks';
 
 export default function AccountUpdater() {
   const dispatch = useAppDispatch();
@@ -17,6 +18,7 @@ export default function AccountUpdater() {
   const isUnlocked = useIsUnlocked();
   const balance = useAccountBalance();
   const atomicals = useAtomicals();
+  const endPoint = useAtomNetworkType()
   const selfRef = useRef({
     preAccountKey: '',
     loadingBalance: false,
@@ -70,7 +72,7 @@ export default function AccountUpdater() {
     fetchBalance().finally(() => {
       self.loadingBalance = false;
     });
-  }, [fetchBalance, wallet, isUnlocked, self]);
+  }, [fetchBalance, wallet, isUnlocked, self, endPoint]);
 
   useEffect(() => {
     const accountChangeHandler = (account: Account) => {

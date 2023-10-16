@@ -146,6 +146,10 @@ export default function WalletTabScreen() {
                   <span>{'Atomicals Balance'}</span>
                   <span>{` ${accountBalance.atomical_amount} BTC`}</span>
                 </Row>
+                <Row justifyBetween>
+                  <span>{'Inscription Balance'}</span>
+                  <span>{` ${accountBalance.inscription_amount} BTC`}</span>
+                </Row>
               </span>
             }
             overlayStyle={{
@@ -376,7 +380,7 @@ function InscriptionList() {
 //   );
 // }
 
-const AtomicalView = ({ items }: { items: IAtomicalItem[] }) => {
+const AtomicalView = ({ items, disabled }: { items: IAtomicalItem[], disabled?:boolean }) => {
   const navigate = useNavigate();
   return (
     <>
@@ -387,6 +391,7 @@ const AtomicalView = ({ items }: { items: IAtomicalItem[] }) => {
               key={index}
               tokenBalance={data}
               onClick={() => {
+                if(disabled)return
                 navigate('ARC20SendScreen', { tokenBalance: data, ticker: data.$ticker });
               }}
             />
@@ -399,6 +404,7 @@ const AtomicalView = ({ items }: { items: IAtomicalItem[] }) => {
               selectvalues={[]}
               tokenBalance={data}
               onClick={() => {
+                if(disabled)return
                 navigate('ARC20NFTScreen', { tokenBalance: data, ticker: data.$ticker });
               }}
             />
@@ -473,25 +479,27 @@ function ARC20List({ tabKey }: { tabKey: WalletTabScreenTabKey }) {
       <Row style={{ flexWrap: 'wrap' }} gap="sm">
         {tabKey === WalletTabScreenTabKey.MERGED ? (
           <>
-            <Row mb='md'>
+            <Row mb='md' full>
               <Text text={'To split NFTs, visit '} color="textDim" />
               <Text text={'https://wizz.cash/.'} onClick={() => {
                 window.open('https://wizz.cash');
               }} />
             </Row>
-            {atomicals.atomicalMerged.map((utxo) => {
+            {atomicals.atomicalMerged.map((utxo, index) => {
               return (
-                <>
-                  <Text text={`UTXO: ${utxo.txid}`} color="textDim" />
-                  <Row>
+                <Column key={index} full>
+                  <Text text={`UTXO: ${utxo.txid?.slice(0, 6)}...${utxo.txid?.slice(-4)}:${utxo.index}`} color="textDim" />
+                  <Row full>
                     <Text text={'Including:'} size="xs" color="textDim" />
                     <Text text={`${utxo.value}`} size="xs" />
                     <Text text={'sats, '} size="xs" color="textDim" />
                     <Text text={`${utxo.atomicals.length}`} size="xs" />
                     <Text text={'atomicals'} color="textDim" />
                   </Row>
-                  <AtomicalView items={utxo.atomicals} />
-                </>
+                  <Row mt='md' full>
+                    <AtomicalView disabled items={utxo.atomicals} />
+                  </Row>
+                </Column>
               );
             })}
           </>

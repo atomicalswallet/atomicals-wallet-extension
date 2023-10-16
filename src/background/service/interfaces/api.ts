@@ -13,6 +13,7 @@ export interface ElectrumApiInterface {
   close: () => Promise<void>;
   open: () => Promise<void | boolean>;
   getUrl: () => string;
+  setUrl: (url: string) => void;
   resetConnection: () => Promise<void | boolean>;
   reset: () => void;
   isOpen: () => boolean;
@@ -390,6 +391,7 @@ export interface IWalletBalance {
   atomicalMerged: IMergedAtomicals[];
   atomicalNFTs: IAtomicalItem[];
   scripthash: string;
+  output: string | Buffer;
   address: string;
   atomicalsUTXOs: UTXO[];
   atomicalsValue?: number;
@@ -404,4 +406,37 @@ export interface IWalletBalance {
   regularsValue: number;
   unconfirmedValue: number;
   atomicalsWithOrdinalsUTXOs: UTXO[];
+}
+
+export type TxItem = {
+  locktime: number;
+  size: number;
+  fee: number;
+  txid: string;
+  weight: number;
+  vin: {
+    scriptsig: string;
+    witness: string[];
+    sequence: number;
+    scriptsig_asm: string;
+    prevout: {
+      scriptpubkey_address: string;
+      scriptpubkey: string;
+      scriptpubkey_asm: string;
+      scriptpubkey_type: string;
+      value: number
+    };
+    is_coinbase: boolean;
+    txid: string;
+    vout: number
+  }[];
+  version: number;
+  vout: {
+    scriptpubkey_address: string;
+    scriptpubkey: string;
+    scriptpubkey_asm: string;
+    scriptpubkey_type: string;
+    value: number
+  }[];
+  status: { confirmed: boolean }
 }

@@ -72,6 +72,9 @@ function Preview(props: { selectValues: string[]; updateStep: (step: Step) => vo
       outputs: outputs ?? []
     };
     const rawTxInfo = await createARC20NFTTx(obj, toInfo, atomicals.regularsUTXOs, feeRate, false);
+    if(rawTxInfo && rawTxInfo.err) {
+      return setError(rawTxInfo.err);
+    }
     if (rawTxInfo && rawTxInfo.fee) {
       if (rawTxInfo.fee > atomicals.regularsValue) {
         setError(`Fee ${rawTxInfo.fee} sats Insufficient BTC balance`);

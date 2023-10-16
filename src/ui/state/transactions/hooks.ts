@@ -134,6 +134,12 @@ export function useCreateARC20TxCallback() {
       // TODO DETECT THAT THERE NEEDS TO BE CHANGE ADDED AND THEN
       if (tokenBalanceIn !== tokenBalanceOut) {
         console.log('Invalid input and output does not match for token. Developer Error.');
+        return {
+          psbtHex: '',
+          rawtx: '',
+          toAddressInfo,
+          err: 'Invalid input and output does not match for token.'
+        };
       }
 
       const { expectedSatoshisDeposit } = calculateFTFundsRequired(
@@ -144,7 +150,12 @@ export function useCreateARC20TxCallback() {
       );
       if (expectedSatoshisDeposit <= 546) {
         console.log('Invalid expectedSatoshisDeposit. Developer Error.');
-        return undefined;
+        return {
+          psbtHex: '',
+          rawtx: '',
+          toAddressInfo,
+          err: 'Invalid expectedSatoshisDeposit.'
+        };
       }
 
       if (transferOptions.selectedUtxos.length === 0) {
@@ -226,8 +237,12 @@ export function useCreateARCNFTTxCallback() {
       try {
         detectAddressTypeToScripthash(toAddressInfo.address);
       } catch (e) {
-        // setErrorMessage('Please ensure all addresses have been entered correctly.');
-        return;
+         return {
+          psbtHex: '',
+          rawtx: '',
+          toAddressInfo,
+          err: 'Please ensure all addresses have been entered correctly.'
+        };
       }
 
       for (const utxo of transferOptions.selectedUtxos) {
@@ -263,7 +278,12 @@ export function useCreateARCNFTTxCallback() {
       );
       if (expectedSatoshisDeposit <= 546) {
         console.log('Invalid expectedSatoshisDeposit. Developer Error.');
-        return undefined;
+        return {
+          psbtHex: '',
+          rawtx: '',
+          toAddressInfo,
+          err: 'Invalid expectedSatoshisDeposit.'
+        };
       }
 
       if (transferOptions.selectedUtxos.length === 0) {

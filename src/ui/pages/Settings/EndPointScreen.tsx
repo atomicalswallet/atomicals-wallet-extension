@@ -1,10 +1,12 @@
-import { NETWORK_TYPES } from '@/shared/constant';
+import { ATOM_NETWORK_TYPES } from '@/shared/constant';
 import { Content, Header, Layout, Icon, Column, Row, Card, Text } from '@/ui/components';
-import { useChangeNetworkTypeCallback, useNetworkType } from '@/ui/state/settings/hooks';
+import { useAtomNetworkType, useChangeAtomNetworkTypeCallback } from '@/ui/state/settings/hooks';
 
-export default function NetworkTypeScreen() {
-  const networkType = useNetworkType();
-  const changeNetworkType = useChangeNetworkTypeCallback();
+export default function EndPointScreen() {
+  const networkType = useAtomNetworkType();
+  // const changeNetworkType = useChangeNetworkTypeCallback();
+  const changeAtomNetworkType = useChangeAtomNetworkTypeCallback()
+  console.log('networkScreen', networkType)
   return (
     <Layout>
       <Header
@@ -15,13 +17,13 @@ export default function NetworkTypeScreen() {
       />
       <Content>
         <Column>
-          {NETWORK_TYPES.map((item, index) => {
+          {ATOM_NETWORK_TYPES.map((item, index) => {
             return (
               <Card
                 key={index}
                 onClick={async () => {
-                  await changeNetworkType(item.value);
-                  window.location.reload();
+                  await changeAtomNetworkType(item.value);
+                  // window.location.reload();
                 }}>
                 <Row full justifyBetween itemsCenter>
                   <Row itemsCenter>
