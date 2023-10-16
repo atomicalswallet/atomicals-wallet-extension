@@ -112,7 +112,7 @@ class PreferenceService {
         currentVersion: '0',
         firstOpen: false,
         currency: 'USD',
-        addressType: AddressType.P2WPKH,
+        addressType: AddressType.M44_P2TR,
         networkType: NetworkType.MAINNET,
         keyringAlianNames: {},
         accountAlianNames: {},
@@ -154,7 +154,7 @@ class PreferenceService {
     }
 
     if (this.store.addressType === undefined || this.store.addressType === null) {
-      this.store.addressType = AddressType.P2WPKH;
+      this.store.addressType = AddressType.M44_P2TR;
     }
 
     if (!this.store.networkType) {

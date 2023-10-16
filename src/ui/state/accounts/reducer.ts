@@ -50,7 +50,7 @@ export const initialState: AccountsState = {
   accounts: [],
   current: initialAccount,
   loading: false,
-  atomicals:{
+  atomicals: {
     atomicalMerged: [],
     atomicalNFTs: [],
     scripthash: '',
@@ -68,8 +68,7 @@ export const initialState: AccountsState = {
     confirmedValue: 0,
     regularsValue: 0,
     unconfirmedValue: 0,
-    atomicalsWithOrdinalsUTXOs: [],
-
+    atomicalsWithOrdinalsUTXOs: []
   },
   balanceMap: {},
   historyMap: {},
@@ -119,19 +118,20 @@ const slice = createSlice({
         atomical_amount: '0',
         expired: true
       };
-      console.log({amount,btc_amount,inscription_amount});
+      // console.log({amount,btc_amount,inscription_amount});
       state.balanceMap[address].amount = amount;
       state.balanceMap[address].btc_amount = btc_amount;
       state.balanceMap[address].inscription_amount = inscription_amount;
       state.balanceMap[address].atomical_amount = atomical_amount;
       state.balanceMap[address].expired = false;
     },
-    setAtomicals(state, action: {
-      payload: IWalletBalance;
-    }){
-      const {
-        payload
-      } = action;
+    setAtomicals(
+      state,
+      action: {
+        payload: IWalletBalance;
+      }
+    ) {
+      const { payload } = action;
       state.atomicals = payload;
     },
 

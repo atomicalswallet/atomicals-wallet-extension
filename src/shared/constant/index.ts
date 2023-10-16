@@ -118,7 +118,7 @@ export const ADDRESS_TYPES: {
     label: 'P2PKH',
     name: 'Legacy (P2PKH)',
     hdPath: "m/44'/0'/0'/0",
-    displayIndex: 3,
+    displayIndex: 4,
     isUnisatLegacy: true
   },
   {
@@ -126,7 +126,7 @@ export const ADDRESS_TYPES: {
     label: 'P2WPKH',
     name: 'Native Segwit (P2WPKH)',
     hdPath: "m/84'/0'/0'/0",
-    displayIndex: 0,
+    displayIndex: 2,
     isUnisatLegacy: true
   },
   {
@@ -134,8 +134,8 @@ export const ADDRESS_TYPES: {
     label: 'P2TR',
     name: 'Taproot (P2TR)',
     hdPath: "m/86'/0'/0'/0",
-    displayIndex: 2,
-    isUnisatLegacy: true
+    displayIndex: 1,
+    isUnisatLegacy: false
   },
   {
     value: AddressType.P2SH_P2WPKH,
@@ -150,7 +150,7 @@ export const ADDRESS_TYPES: {
     label: 'P2WPKH',
     name: 'Native SegWit (P2WPKH)',
     hdPath: "m/44'/0'/0'/0",
-    displayIndex: 4,
+    displayIndex: 5,
     isUnisatLegacy: true
   },
   {
@@ -158,7 +158,7 @@ export const ADDRESS_TYPES: {
     label: 'P2TR',
     name: 'Legacy && Taproot (M44_P2TR)',
     hdPath: "m/44'/0'/0'/0",
-    displayIndex: 5,
+    displayIndex: 0,
     isUnisatLegacy: false
   }
 ];
@@ -170,10 +170,11 @@ export const RESTORE_WALLETS: { value: RestoreWalletType; name: string; addressT
     addressTypes: [
       // AddressType.P2WPKH,
       // AddressType.P2SH_P2WPKH,
-      // AddressType.P2TR,
+
       // AddressType.P2PKH,
       // AddressType.M44_P2WPKH,
-      AddressType.M44_P2TR
+      AddressType.M44_P2TR,
+      AddressType.P2TR
     ]
   }
   // {

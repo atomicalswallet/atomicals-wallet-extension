@@ -134,7 +134,7 @@ export function useVersionInfo() {
     skipped = true;
   }
   const githubUrl = `https://github.com/unisat-wallet/extension/releases/tag/v${newVersion}`;
-  const chromeUrl = 'https://chrome.google.com/webstore/detail/unisat-wallet/ppbibelpcjmhbdihakflkdcoccbgbkpo?hl=en-US';
+  const chromeUrl = 'https://chrome.google.com/webstore/detail/atom-wallet/ghlmndacnhlaekppcllcpcjjjomjkjpg';
   const downloadUrl = CHANNEL === 'github' ? githubUrl : chromeUrl;
   return {
     currentVesion,

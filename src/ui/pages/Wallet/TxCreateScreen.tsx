@@ -58,7 +58,7 @@ export default function TxCreateScreen() {
   const dustAmount = useMemo(() => satoshisToAmount(COIN_DUST), [COIN_DUST]);
 
   const [feeRate, setFeeRate] = useState(5);
-  const atomicals  = useAtomicals()
+  const atomicals = useAtomicals();
 
   const [rawTxInfo, setRawTxInfo] = useState<RawTxInfo>();
   useEffect(() => {
@@ -111,10 +111,9 @@ export default function TxCreateScreen() {
       });
   }, [toInfo, inputAmount, autoAdjust, feeRate]);
 
-  const showSafeBalance = useMemo(
-    () => new BigNumber(accountBalance.amount).eq(new BigNumber(safeBalance)) == false,
-    [accountBalance.amount, safeBalance]
-  );
+  const showSafeBalance = useMemo(() => {
+    return new BigNumber(accountBalance.amount).eq(new BigNumber(safeBalance)) == false;
+  }, [accountBalance.amount, safeBalance]);
 
   return (
     <Layout>
