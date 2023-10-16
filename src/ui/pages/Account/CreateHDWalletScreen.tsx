@@ -717,7 +717,7 @@ export default function CreateHDWalletScreen() {
     mnemonics: '',
     hdPath: '',
     passphrase: '',
-    addressType: AddressType.P2WPKH,
+    addressType: AddressType.M44_P2TR,
     step1Completed: false,
     tabType: TabType.STEP1,
     restoreWalletType: RestoreWalletType.WIZZ,

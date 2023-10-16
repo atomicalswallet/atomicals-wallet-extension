@@ -1,9 +1,9 @@
 import VirtualList from 'rc-virtual-list';
-import { forwardRef, useCallback, useEffect, useMemo, useState } from 'react';
+import { forwardRef, useMemo, useState } from 'react';
 
 import { KEYRING_TYPE } from '@/shared/constant';
 import { WalletKeyring } from '@/shared/types';
-import { Button, Card, Column, Content, Header, Icon, Layout, Row, Text } from '@/ui/components';
+import { Card, Column, Content, Header, Icon, Layout, Row, Text } from '@/ui/components';
 import { useTools } from '@/ui/components/ActionComponent';
 import { RemoveWalletPopover } from '@/ui/components/RemoveWalletPopover';
 import { accountActions } from '@/ui/state/accounts/reducer';
@@ -45,12 +45,10 @@ export function MyItem({ keyring, autoNav }: MyItemProps, ref) {
 
   const tools = useTools();
 
-  const displayAddress = useCallback(() => {
-    if (keyring) {
-      const address = keyring.accounts[0].address;
-      return shortAddress(address);
-    }
-  }, [keyring]);
+  const displayAddress = useMemo(() => {
+    const address = keyring.accounts[0].address;
+    return shortAddress(address);
+  }, []);
 
   const [optionsVisible, setOptionsVisible] = useState(false);
   const [removeVisible, setRemoveVisible] = useState(false);
@@ -78,7 +76,7 @@ export function MyItem({ keyring, autoNav }: MyItemProps, ref) {
 
         <Column justifyCenter>
           <Text text={`${keyring.alianName}`} />
-          <Text text={`${displayAddress()}`} preset="sub" />
+          <Text text={`${displayAddress}`} preset="sub" />
         </Column>
       </Row>
 
@@ -181,30 +179,18 @@ export default function SwitchKeyringScreen() {
 
   const keyrings = useKeyrings();
 
-  const [kItems, setKItems] = useState<ItemData[]>([]);
-
-  useEffect(() => {
-    if (keyrings && keyrings.length > 0) {
-      const _items: ItemData[] = keyrings.map((v) => {
-        return {
-          key: v.key,
-          keyring: v
-        };
-      });
-      setKItems(_items);
-    }
-  }, [keyrings]);
-
-  const manuallyLoadKeyRings = useCallback(async () => {
+  const items = useMemo(() => {
     const _items: ItemData[] = keyrings.map((v) => {
       return {
         key: v.key,
         keyring: v
       };
     });
-    setKItems(_items);
+    // _items.push({
+    //   key: 'add'
+    // });
+    return _items;
   }, [keyrings]);
-
   const ForwardMyItem = forwardRef(MyItem);
   return (
     <Layout>
@@ -223,24 +209,20 @@ export default function SwitchKeyringScreen() {
         }
       />
       <Content>
-        {kItems.length > 0 ? (
-          <VirtualList
-            data={kItems}
-            data-id="list"
-            itemHeight={30}
-            itemKey={(item) => item.key}
-            // disabled={animating}
-            style={{
-              boxSizing: 'border-box'
-            }}
-            // onSkipRender={onAppear}
-            // onItemRemove={onAppear}
-          >
-            {(item, index) => <ForwardMyItem keyring={item.keyring} autoNav={true} />}
-          </VirtualList>
-        ) : (
-          <Button onClick={manuallyLoadKeyRings}>Click here to refresh</Button>
-        )}
+        <VirtualList
+          data={items}
+          data-id="list"
+          itemHeight={30}
+          itemKey={(item) => item.key}
+          // disabled={animating}
+          style={{
+            boxSizing: 'border-box'
+          }}
+          // onSkipRender={onAppear}
+          // onItemRemove={onAppear}
+        >
+          {(item, index) => <ForwardMyItem keyring={item.keyring} autoNav={true} />}
+        </VirtualList>
       </Content>
     </Layout>
   );

@@ -224,7 +224,7 @@ interface UpdateContextDataParams {
 export default function CreateSimpleWalletScreen() {
   const [contextData, setContextData] = useState<ContextData>({
     wif: '',
-    addressType: AddressType.P2WPKH,
+    addressType: AddressType.M44_P2TR,
     step1Completed: false,
     tabType: TabType.STEP1
   });
