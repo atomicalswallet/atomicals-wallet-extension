@@ -112,6 +112,9 @@ export function FeeRateBar({ onChange }: { onChange: (val: number) => void }) {
           onChange={async (e) => {
             adjustFeeRateInput(e.target.value);
           }}
+          onAmountInputChange={(amount) => {
+            adjustFeeRateInput(amount);
+          }}
           // onBlur={() => {
           //   const val = parseInt(feeRateInputVal) + '';
           //   setFeeRateInputVal(val);

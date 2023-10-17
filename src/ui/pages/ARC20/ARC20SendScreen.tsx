@@ -224,14 +224,15 @@ function Step1({
           <Column mt="lg">
             <Input
               preset="amount"
+              disableDecimal
               placeholder={'Amount'}
               defaultValue={inputAmount}
               value={inputAmount}
-              onChange={async (e) => {
+              onAmountInputChange={async (value) => {
                 // if (autoAdjust == true) {
                 //   setAutoAdjust(false);
                 // }
-                setInputAmount(e.target.value);
+                setInputAmount(value);
               }}
             />
           </Column>
