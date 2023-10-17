@@ -13,7 +13,7 @@ export interface ElectrumApiInterface {
   close: () => Promise<void>;
   open: () => Promise<void | boolean>;
   getUrl: () => string;
-  setUrl: (url: string) => void;
+  // setUrl: (url: string) => void;
   resetConnection: () => Promise<void | boolean>;
   reset: () => void;
   isOpen: () => boolean;
@@ -67,13 +67,12 @@ export interface IAtomicalBalanceSummary {
   utxos: any[];
 }
 
-
 export interface IAtomicalBalances {
   [AtomId: string]: IAtomicalItem;
 }
 
 enum TickerStatus {
-  'verified' = 'verified',
+  'verified' = 'verified'
 }
 
 export interface TickerCandidate {
@@ -83,7 +82,6 @@ export interface TickerCandidate {
   tx_num: number;
   txid: string;
 }
-
 
 // export interface IAtomicalBalanceItemData {
 //   $bitwork?: {
@@ -200,8 +198,7 @@ export interface MintDataSummary {
   fields: { [key: string]: any };
 }
 
-export interface StateInfo {
-}
+export interface StateInfo {}
 
 export interface RuleSet {
   pattern: string;
@@ -381,11 +378,9 @@ export interface IAtomicalItem {
   $container?: string;
 }
 
-
 export type IMergedAtomicals = UTXO & {
   atomicals: IAtomicalItem[];
-}
-
+};
 
 export interface IWalletBalance {
   atomicalMerged: IMergedAtomicals[];
@@ -424,11 +419,11 @@ export type TxItem = {
       scriptpubkey: string;
       scriptpubkey_asm: string;
       scriptpubkey_type: string;
-      value: number
+      value: number;
     };
     is_coinbase: boolean;
     txid: string;
-    vout: number
+    vout: number;
   }[];
   version: number;
   vout: {
@@ -436,7 +431,7 @@ export type TxItem = {
     scriptpubkey: string;
     scriptpubkey_asm: string;
     scriptpubkey_type: string;
-    value: number
+    value: number;
   }[];
-  status: { confirmed: boolean }
-}
+  status: { confirmed: boolean };
+};
