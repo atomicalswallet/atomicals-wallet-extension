@@ -115,16 +115,14 @@ export function useCreateBitcoinTxCallback() {
       }
       const { output } = detectAddressTypeToScripthash(fromAddress);
       for (const utxo of inputUtxos) {
-        const utxoInput =utxoToInput({
+        const utxoInput = utxoToInput({
           utxo,
           pubkey: account.pubkey,
           addressType: getAddressType(fromAddress)!,
           script: output
-        })
-        if(utxoInput) {
-          psbt.addInput(
-            utxoInput.data
-          );
+        });
+        if (utxoInput) {
+          psbt.addInput(utxoInput.data);
         } else {
           return {
             psbtHex: '',
@@ -388,11 +386,14 @@ export function useCreateARCNFTTxCallback() {
         } else {
           addedValue += utxo.value;
           addedInputs.push(utxo);
-          const utxoInput = utxoToInput({ utxo, addressType: getAddressType(fromAddress), pubkey, script: atomicals.output })
-          if(utxoInput) {
-            psbt.addInput(
-              utxoInput.data
-            );
+          const utxoInput = utxoToInput({
+            utxo,
+            addressType: getAddressType(fromAddress),
+            pubkey,
+            script: atomicals.output
+          });
+          if (utxoInput) {
+            psbt.addInput(utxoInput.data);
           }
         }
       }
