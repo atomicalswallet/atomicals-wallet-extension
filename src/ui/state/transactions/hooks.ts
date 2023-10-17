@@ -179,7 +179,7 @@ export function useCreateARC20TxCallback() {
             const { output } = detectAddressTypeToScripthash(fromAddress);
             psbt.addInput({
               hash: utxo.txid,
-              index: utxo.outputIndex,
+              index: utxo.index,
               witnessUtxo: {
                 value: utxo.value,
                 script: Buffer.from(output as string, 'hex')
@@ -306,7 +306,7 @@ export function useCreateARCNFTTxCallback() {
           const { output } = detectAddressTypeToScripthash(fromAddress);
           psbt.addInput({
             hash: utxo.txid,
-            index: utxo.outputIndex,
+            index: utxo.index,
             witnessUtxo: {
               value: utxo.value,
               script: Buffer.from(output as string, 'hex')

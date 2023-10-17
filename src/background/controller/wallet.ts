@@ -52,8 +52,8 @@ import BaseController from './base';
 import { AtomicalService } from '../service/atomical';
 import { IAtomicalItem, IMergedAtomicals, IWalletBalance, UTXO as AtomUtxo } from '../service/interfaces/api';
 import { MempoolService, mempoolService } from '../service/mempool';
-import { ElectrumApi } from '../service/eletrum';
 import { detectAddressTypeToScripthash } from '../service/utils';
+import { ElectrumApi } from '../service/eletrum';
 // import { AtomicalsInfo } from '../service/interfaces/utxo';
 
 const toXOnly = (pubKey: Buffer) => (pubKey.length === 32 ? pubKey : pubKey.slice(1, 33));
@@ -1382,15 +1382,12 @@ export class WalletController extends BaseController {
         }
       } else if (atomical.type === 'FT') {
         const v = atomicalFTs.find((e) => e.$ticker === atomical.ticker);
-        const utxo = atomicalsUTXOs.find((e) => e.atomicals?.includes(atomical.atomical_id))!;
+        const utxos = atomicalsUTXOs.filter((e) => e.atomicals?.includes(atomical.atomical_id))!;
         if (v) {
-          v.utxos.push({
-            ...utxo,
-            atomicals: [item]
-          });
+          v.utxos.push(...utxos);
           v.value += atomical.confirmed;
         } else {
-          atomicalFTs.push({ ...item, utxos: [{ ...utxo, atomicals: [item] }] });
+          atomicalFTs.push({ ...item, utxos: utxos });
         }
       } else if (atomical.type === 'NFT') {
         atomicalNFTs.push(item);

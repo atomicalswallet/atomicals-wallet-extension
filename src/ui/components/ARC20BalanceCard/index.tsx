@@ -1,9 +1,5 @@
-import { Tooltip } from 'antd';
 
 // import { TokenBalance } from '@/shared/types';
-import { colors } from '@/ui/theme/colors';
-import { fontSizes } from '@/ui/theme/font';
-import { InfoCircleOutlined } from '@ant-design/icons';
 
 import { Card } from '../Card';
 import { Column } from '../Column';
@@ -48,7 +44,7 @@ export default function ARC20BalanceCard(props: ARC20BalanceCardProps) {
             />
             <Text text={$ticker} color="blue" />
           </Row>
-          <Tooltip
+          {/* <Tooltip
             title="The transferable amount is the balance that has been inscribed into transfer inscriptions but has not yet been sent."
             overlayStyle={{
               fontSize: fontSizes.xs
@@ -59,7 +55,7 @@ export default function ARC20BalanceCard(props: ARC20BalanceCardProps) {
                 color: colors.textDim
               }}
             />
-          </Tooltip>
+          </Tooltip> */}
         </Row>
 
         <Row style={{ borderTopWidth: 1, borderColor: 'rgba(255,255,255,0.1)' }} />
