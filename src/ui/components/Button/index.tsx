@@ -13,7 +13,7 @@ export interface ButtonProps {
   /**
    * The text to display if not using `tx` or nested components.
    */
-  text?: string;
+  text?: string | React.ReactNode;
   subText?: string;
   /**
    * An optional style override useful for padding & margin.
@@ -187,7 +187,7 @@ export function Button(props: ButtonProps) {
           {LeftAccessory && <div style={$leftAccessoryStyle}>{LeftAccessory}</div>}
           {icon && <Icon icon={icon} color={'white'} style={{ marginRight: spacing.tiny }} />}
           <Column justifyCenter gap="zero">
-            {text && <Text text={text} style={$textStyle} />}
+            {text && typeof text ==='string'? <Text text={text} style={$textStyle} /> : text}
             {subText && <Text text={subText} style={$subTextStyle} />}
           </Column>
 
@@ -207,7 +207,7 @@ export function Button(props: ButtonProps) {
       onMouseLeave={() => setHover(false)}>
       {LeftAccessory && <div style={$leftAccessoryStyle}>{LeftAccessory}</div>}
       {icon && <Icon icon={icon} style={{ marginRight: spacing.tiny, backgroundColor: $textStyle.color }} />}
-      {text && <Text style={$textStyle} text={text} preset="regular-bold" />}
+      {text && typeof text === 'string' ?<Text style={$textStyle} text={text} preset="regular-bold" /> : text}
       {children}
       {RightAccessory && <div style={$rightAccessoryStyle}>{RightAccessory}</div>}
     </div>

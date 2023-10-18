@@ -1,4 +1,4 @@
-import { Checkbox, Dropdown, Radio } from 'antd';
+import { Checkbox, Radio } from 'antd';
 import { CheckboxChangeEvent } from 'antd/lib/checkbox';
 import * as bip39 from 'bip39';
 import bitcore from 'bitcore-lib';
@@ -9,7 +9,7 @@ import { ADDRESS_TYPES, RESTORE_WALLETS } from '@/shared/constant';
 import { AddressType, RestoreWalletType } from '@/shared/types';
 import { Button, Card, Column, Content, Grid, Header, Input, Layout, Row, Text } from '@/ui/components';
 import { useTools } from '@/ui/components/ActionComponent';
-import { AddressTypeCard, AddressTypeCard2 } from '@/ui/components/AddressTypeCard';
+import { AddressTypeCard2 } from '@/ui/components/AddressTypeCard';
 import { FooterButtonContainer } from '@/ui/components/FooterButtonContainer';
 import { Icon } from '@/ui/components/Icon';
 import { TabBar } from '@/ui/components/TabBar';
@@ -523,7 +523,7 @@ function Step2({
   };
 
   return (
-    <Column>
+    <Column >
       {contextData.isRestore && scanned == false ? (
         <Row justifyBetween>
           <Text text="Address Type" preset="bold" />
@@ -795,7 +795,7 @@ export default function CreateHDWalletScreen() {
         }}
         title={contextData.isRestore ? 'Restore from mnemonics' : 'Create a new HD Wallet'}
       />
-      <Content>
+      <Content px="lg">
         <Row justifyCenter>
           <TabBar
             progressEnabled

@@ -28,10 +28,12 @@ import {
   SignPsbtOptions
 } from '@/shared/types';
 import { IWalletBalance } from '@/background/service/interfaces/api';
+import { AtomicalService } from '@/background/service/atomical';
 
 
 
 export interface WalletController {
+  atomicalApi: AtomicalService;
   openapi: {
     [key: string]: (...params: any) => Promise<any>;
   };

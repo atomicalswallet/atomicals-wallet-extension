@@ -69,9 +69,7 @@ function Step1({
   // const [rawTxInfo, setRawTxInfo] = useState<RawTxInfo>();
   const createARC20Tx = useCreateARC20TxCallback();
   const atomicals = useAtomicals();
-  const relatedAtomUtxos = atomicals.atomicalsUTXOs
-    ? atomicals.atomicalsUTXOs.filter((o) => o.atomicals?.includes(contextData.tokenBalance.atomical_id) )
-    : [];
+  const relatedAtomUtxos = atomicals.atomicalFTs.find((o) => o.$ticker === contextData.tokenBalance.$ticker)?.utxos || [];
 
   useEffect(() => {
     setError('');
@@ -162,9 +160,9 @@ function Step1({
       return { value: f.value, address: toInfo.address, ticker: contextData.tokenBalance.$ticker as string, change: false };
     });
     if (changeAmount > 0) {
-      if(changeAmount < 546) {
+      if(changeAmount < DUST_AMOUNT) {
         return {
-          error: 'Remaining Balance less than 546',
+          error: `Remaining Balance less than ${DUST_AMOUNT}`,
           outputs: finalTokenOutputs,
           atomicalsId: contextData.tokenBalance.atomical_id,
           confirmed: contextData.tokenBalance.confirmed,

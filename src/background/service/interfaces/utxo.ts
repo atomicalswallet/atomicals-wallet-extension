@@ -1,5 +1,3 @@
-import { Inscription, UTXO_ATOM } from "@/shared/types";
-import { IAtomicalBalances, ISelectedUtxo } from "./api";
 
 export interface UTXO {
   txid: string;

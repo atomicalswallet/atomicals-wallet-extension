@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 
 import { AddressTokenSummary } from '@/shared/types';
 import { Button, Column, Content, Grid, Header, Image, Input, Layout, Row, Text } from '@/ui/components';
@@ -11,6 +11,9 @@ import { LoadingOutlined } from '@ant-design/icons';
 import Checkbox from '@/ui/components/Checkbox';
 import { useBitcoinTx, useCreateARCNFTTxCallback } from '@/ui/state/transactions/hooks';
 import { FeeRateBar } from '@/ui/components/FeeRateBar';
+import { IAtomicalItem, UTXO } from '@/background/service/interfaces/api';
+import { ElectrumApi } from '@/background/service/eletrum';
+import { ELECTRUMX_HTTP_PROXY } from '@/shared/constant';
 
 interface LocationState {
   ticker: string;
@@ -25,9 +28,13 @@ enum Step {
 function Preview(props: { selectValues: string[]; updateStep: (step: Step) => void }) {
   const { selectValues, updateStep } = props;
   const bitcoinTx = useBitcoinTx();
+  const wallet = useWallet();
   const atomicals = useAtomicals();
   const accountBalance = useAccountBalance();
   const [feeRate, setFeeRate] = useState(5);
+  const [atomicalsWithLocation, setAtomicalsWithLocation] = useState<(IAtomicalItem & {
+    location: UTXO,
+  })[]>([]);
   const [toInfo, setToInfo] = useState<{
     address: string;
     domain: string;
@@ -36,9 +43,41 @@ function Preview(props: { selectValues: string[]; updateStep: (step: Step) => vo
     domain: bitcoinTx.toDomain
   });
   const navigate = useNavigate();
+  const [loading, setLoading] = useState(false)
   const [error, setError] = useState('');
   const [disabled, setDisabled] = useState(true);
   const createARC20NFTTx = useCreateARCNFTTxCallback();
+
+
+
+  const selectAtomcalsNFTs = useMemo(() => {
+    if (!atomicals.atomicalNFTs) return [];
+    return atomicals.atomicalNFTs.filter((o) => selectValues.includes(o.atomical_id));
+  }, [atomicals]);
+
+  // const utxos = atomicals.atomicalsUTXOs.filter((o) => selectValues.includes(`${o.atomicals?.[0]}`));
+
+  const loadAtomicalsWithLocation = useCallback(async () => {
+    if (wallet && toInfo.address && selectValues) {
+      try {
+        setLoading(true)
+        const api = ElectrumApi.createClient(ELECTRUMX_HTTP_PROXY)
+        const list = await Promise.all(
+          selectValues.map((atomical_id) => api.atomicalsGetLocation(atomical_id))
+        );
+        const atomicalsWithLocation = selectAtomcalsNFTs.map((e, i) => {
+          const location = list[i].result.location_info_obj.locations[0];
+          return {
+            ...e,
+            location: location
+          };
+        });
+        setAtomicalsWithLocation(atomicalsWithLocation);
+      } finally {
+        setLoading(false)
+      }
+    }
+  }, [wallet, toInfo, selectValues]);
 
   useEffect(() => {
     setError('');
@@ -47,32 +86,36 @@ function Preview(props: { selectValues: string[]; updateStep: (step: Step) => vo
     if (!isValidAddress(toInfo.address)) {
       return;
     }
+    if(wallet) {
+      loadAtomicalsWithLocation();
+    }
 
     setDisabled(false);
-  }, [toInfo, feeRate]);
+  }, [toInfo, wallet, feeRate, loadAtomicalsWithLocation]);
 
-  const selectAtomcals = useMemo(() => {
-    if (!atomicals.atomicalNFTs) return [];
-    return atomicals.atomicalNFTs
-      .filter((o) => selectValues.includes(o.atomical_id));
-  }, [atomicals]);
-
-  const utxos = atomicals.atomicalsUTXOs.filter((o) => selectValues.includes(`${o.atomicals?.[0]}`));
+  console.log('atomicalsWithLocation', atomicalsWithLocation)
 
   const outputs = useMemo(() => {
-    const outputs = utxos.map((utxo) => ({
-      value: utxo.value,
+    const outputs = atomicalsWithLocation.map((item) => ({
+      value: item.location.value,
       address: toInfo.address
     }));
     return outputs;
-  }, [toInfo]);
+  }, [toInfo, atomicalsWithLocation]);
+
+  const includeOrdinals = atomicalsWithLocation.filter((e) => {
+    const find = atomicals.ordinalsUTXOs.find((u) => u.txid === e.location.txid && u.index === e.location.index);
+    return !!find;
+  });
+
   const onClickNext = async () => {
+    if(atomicalsWithLocation.length === 0) return;
     const obj = {
-      selectedUtxos: utxos ?? [],
+      selectedUtxos: atomicalsWithLocation.map(o => o.location) ?? [],
       outputs: outputs ?? []
     };
     const rawTxInfo = await createARC20NFTTx(obj, toInfo, atomicals.regularsUTXOs, feeRate, false);
-    if(rawTxInfo && rawTxInfo.err) {
+    if (rawTxInfo && rawTxInfo.err) {
       return setError(rawTxInfo.err);
     }
     if (rawTxInfo && rawTxInfo.fee) {
@@ -109,7 +152,10 @@ function Preview(props: { selectValues: string[]; updateStep: (step: Step) => vo
             <Column mt="lg">
               <Text text="NFTs" preset="regular" color="textDim" />
               <Text
-                text={`All Include: ${selectAtomcals.map((o) => o.value).reduce((pre, cur) => pre + cur, 0).toLocaleString()} sats`}
+                text={`All Include: ${selectAtomcalsNFTs
+                  .map((o) => o.value)
+                  .reduce((pre, cur) => pre + cur, 0)
+                  .toLocaleString()} sats`}
                 color="textDim"
                 size="xs"
               />
@@ -118,7 +164,7 @@ function Preview(props: { selectValues: string[]; updateStep: (step: Step) => vo
                 <Text text={'AtomicalNumber'} textCenter size="sm" />
                 <Text text={'Value'} textCenter size="sm" />
               </Grid>
-              {selectAtomcals.map((data, index) => {
+              {selectAtomcalsNFTs.map((data, index) => {
                 const { type, content } = returnImageType(data);
                 return (
                   <Grid columns={3} key={index} style={{ alignItems: 'center' }}>
@@ -133,13 +179,9 @@ function Preview(props: { selectValues: string[]; updateStep: (step: Step) => vo
             </Column>
             <Column mt="lg">
               <Row justifyBetween>
-              <Text text={'Available (safe for fee)'} color="textDim" />
-              <Text
-                text={ `${accountBalance.btc_amount} BTC`}
-                preset="bold"
-                size="sm"
-              />
-            </Row>
+                <Text text={'Available (safe for fee)'} color="textDim" />
+                <Text text={`${accountBalance.btc_amount} BTC`} preset="bold" size="sm" />
+              </Row>
             </Column>
             <Column mt="lg">
               <Text text={'Real-time Fee Rate'} preset="regular" color="textDim" />
@@ -149,11 +191,22 @@ function Preview(props: { selectValues: string[]; updateStep: (step: Step) => vo
                 }}
               />
             </Column>
+            {includeOrdinals.length ? (
+              <Column mt="lg">
+                <Text
+                  color="error"
+                  text={`Notice: Ordinals present
+                      in ${includeOrdinals
+                        .map((e) => `# ${e.atomical_number.toLocaleString()}`)
+                        .join(', ')}. Please send
+                      with caution.`}
+                />
+              </Column>
+            ) : null}
           </Column>
-
           <Column>
             {error && <Text text={error} color="error" />}
-            <Button text="Next" preset="primary" onClick={onClickNext} disabled={disabled} />
+            <Button text={loading ? '': 'Next'} preset="primary" onClick={onClickNext} disabled={disabled || loading} />
           </Column>
         </Column>
       </Content>
@@ -220,10 +273,9 @@ const ARC20NFTScreen = () => {
               <Text text="Select NFT to send" preset="regular" color="textDim" />
               <Row style={{ flexWrap: 'wrap', maxHeight: 'calc(100vh - 170px)', overflow: 'auto' }} gap="sm" full>
                 <Checkbox.Group onChange={onChange} value={checkedList}>
-                  {atomicals.atomicalNFTs
-                    .map((data, index) => {
-                      return <ARC20NFTCard key={index} checkbox selectvalues={checkedList} tokenBalance={data} />;
-                    })}
+                  {atomicals.atomicalNFTs.map((data, index) => {
+                    return <ARC20NFTCard key={index} checkbox selectvalues={checkedList} tokenBalance={data} />;
+                  })}
                 </Checkbox.Group>
               </Row>
             </Column>

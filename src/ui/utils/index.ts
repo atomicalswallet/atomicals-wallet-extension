@@ -168,6 +168,27 @@ export function useLocationState<T>() {
 }
 
 
+export const calculateFundsRequired = (
+  additionalInputValue: number,
+  atomicalSats: number,
+  satsByte: number,
+  mintDataLength = 0,
+  baseTxByteLength = 300,
+) => {
+  // The default base includes assumes 1 input and 1 output with room to spare
+  const estimatedTxSizeBytes = baseTxByteLength + mintDataLength;
+  const expectedFee = estimatedTxSizeBytes * satsByte;
+  let expectedSatoshisDeposit = expectedFee + atomicalSats - additionalInputValue;
+  if (expectedSatoshisDeposit > 0 && expectedSatoshisDeposit < 546) {
+    expectedSatoshisDeposit = 546;
+  }
+  return {
+    expectedSatoshisDeposit,
+    expectedFee,
+  };
+};
+
+
 
 export const calculateFTFundsRequired = (
   numberOfInputs: number,

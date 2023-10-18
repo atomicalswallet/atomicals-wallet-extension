@@ -3,7 +3,7 @@ import { useCallback, useMemo } from 'react';
 import * as bitcoin from 'bitcoinjs-lib';
 import { RawTxInfo, ToAddressInfo, TransferFtConfigInterface } from '@/shared/types';
 import { useTools } from '@/ui/components/ActionComponent';
-import { calculateFTFundsRequired, satoshisToAmount, satoshisToBTC, sleep, useWallet } from '@/ui/utils';
+import { calculateFTFundsRequired, calculateFundsRequired, satoshisToAmount, satoshisToBTC, sleep, useWallet } from '@/ui/utils';
 
 import { AppState } from '..';
 import { useAccountAddress, useAtomicals, useCurrentAccount } from '../accounts/hooks';
@@ -247,13 +247,12 @@ export function useCreateARCNFTTxCallback() {
       for (const utxo of transferOptions.selectedUtxos) {
         // Add the atomical input, the value from the input counts towards the total satoshi amount required
         if (!preload) {
-          const { output } = detectAddressTypeToScripthash(fromAddress);
           psbt.addInput({
             hash: utxo.txid,
             index: utxo.index,
             witnessUtxo: {
               value: utxo.value,
-              script: Buffer.from(output as string, 'hex')
+              script: Buffer.from(utxo.script as string, 'hex')
             },
             tapInternalKey: Buffer.from(xpub, 'hex')
           });
@@ -268,13 +267,21 @@ export function useCreateARCNFTTxCallback() {
           });
         }
       }
-      let expectedFundinng = 0;
-      const { expectedSatoshisDeposit } = calculateFTFundsRequired(
-        transferOptions.selectedUtxos.length,
-        transferOptions.outputs.length,
-        satsbyte,
-        0
-      );
+      // let expectedFundinng = 0;
+      // const { expectedSatoshisDeposit } = calculateFundsRequired(
+      //   transferOptions.selectedUtxos.length,
+      //   transferOptions.outputs.length,
+      //   satsbyte,
+      //   0
+      // );
+      let expectedFundinng = 0
+      const expectedSatoshisDeposit = transferOptions.selectedUtxos.reduce((a, b) => {
+        let ret = calculateFundsRequired(b.value, b.value, satsbyte).expectedSatoshisDeposit;
+        if (ret < 0) {
+          ret = calculateFundsRequired(0, b.value, satsbyte).expectedSatoshisDeposit;
+        }
+        return a + ret;
+      }, 0);
       if (expectedSatoshisDeposit <= 546) {
         console.log('Invalid expectedSatoshisDeposit. Developer Error.');
         return {

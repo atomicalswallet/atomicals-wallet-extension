@@ -129,6 +129,7 @@ export interface UTXO {
   outputIndex: number;
   satoshis: number;
   scriptPk: string;
+  script?: string;
   addressType: AddressType;
   inscriptions: {
     id: string;
