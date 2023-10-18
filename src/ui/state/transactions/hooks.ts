@@ -6,7 +6,7 @@ import { useTools } from '@/ui/components/ActionComponent';
 import { calculateFTFundsRequired, satoshisToAmount, satoshisToBTC, sleep, useWallet } from '@/ui/utils';
 
 import { AppState } from '..';
-import { useAccountAddress, useCurrentAccount } from '../accounts/hooks';
+import { useAccountAddress, useAtomicals, useCurrentAccount } from '../accounts/hooks';
 import { accountActions } from '../accounts/reducer';
 import { useAppDispatch, useAppSelector } from '../hooks';
 import { transactionsActions } from './reducer';
@@ -28,14 +28,12 @@ export function useCreateBitcoinTxCallback() {
   const fromAddress = useAccountAddress();
   const utxos = useUtxos();
   const fetchUtxos = useFetchUtxosCallback();
+  const atomicals = useAtomicals()
 
   return useCallback(
     async (toAddressInfo: ToAddressInfo, toAmount: number, feeRate?: number, receiverToPayFee = false) => {
-      let _utxos = utxos;
-      if (_utxos.length === 0) {
-        _utxos = await fetchUtxos();
-      }
-      const safeBalance = _utxos.filter((v) => v.inscriptions.length == 0).reduce((pre, cur) => pre + cur.satoshis, 0);
+      let _utxos = atomicals.regularsUTXOs;
+      const safeBalance = atomicals.regularsValue;
       if (safeBalance < toAmount) {
         throw new Error(
           `Insufficient balance. Non-Inscription balance(${satoshisToAmount(

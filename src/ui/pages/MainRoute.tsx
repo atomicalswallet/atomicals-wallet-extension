@@ -36,7 +36,6 @@ import UpgradeNoticeScreen from './Settings/UpgradeNoticeScreen';
 import TestScreen from './Test/TestScreen';
 import ReceiveScreen from './Wallet/ReceiveScreen';
 import TxConfirmScreen from './Wallet/TxConfirmScreen';
-import TxCreateScreen from './Wallet/TxCreateScreen';
 import TxFailScreen from './Wallet/TxFailScreen';
 import TxSuccessScreen from './Wallet/TxSuccessScreen';
 import './index.module.less';
@@ -95,10 +94,10 @@ const routes = {
     element: <ReceiveScreen />
   },
 
-  TxCreateScreen: {
-    path: '/wallet/tx/create',
-    element: <TxCreateScreen />
-  },
+  // TxCreateScreen: {
+  //   path: '/wallet/tx/create',
+  //   element: <TxCreateScreen />
+  // },
   TxConfirmScreen: {
     path: '/wallet/tx/confirm',
     element: <TxConfirmScreen />

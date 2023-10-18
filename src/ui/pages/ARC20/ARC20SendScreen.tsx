@@ -85,6 +85,10 @@ function Step1({
       return;
     }
 
+    if(error2) {
+      return;
+    }
+
     if (!inputAmount) {
       return;
     }
@@ -92,6 +96,7 @@ function Step1({
   }, [toInfo, inputAmount, feeRate]);
 
   const {
+    error: error2,
     utxos,
     outputs,
     remaining_utxos,
@@ -157,6 +162,19 @@ function Step1({
       return { value: f.value, address: toInfo.address, ticker: contextData.tokenBalance.$ticker as string, change: false };
     });
     if (changeAmount > 0) {
+      if(changeAmount < 546) {
+        return {
+          error: 'Remaining Balance less than 546',
+          outputs: finalTokenOutputs,
+          atomicalsId: contextData.tokenBalance.atomical_id,
+          confirmed: contextData.tokenBalance.confirmed,
+          totalAmount: currentOutputValue || 0,
+          utxos: _selectedUtxos.length > 0 ? _selectedUtxos : [],
+          remaining: _remaining_balances,
+          remaining_min,
+          remaining_utxos: _remaining_utxos
+        }
+      }
       finalTokenOutputs.push({
         value: changeAmount,
         address: fromAddress,
@@ -164,6 +182,7 @@ function Step1({
         change: true
       });
     }
+
     finalTokenOutputs = [...finalTokenOutputs];
 
     return {
@@ -179,6 +198,7 @@ function Step1({
   }, [contextData.tokenBalance, inputAmount, toInfo, feeRate]);
 
   const onClickNext = async () => {
+    if(error || error2) return;
     const obj: TransferFtConfigInterface = {
       selectedUtxos: utxos ?? [],
       type: contextData?.tokenBalance?.type,
@@ -254,6 +274,7 @@ function Step1({
           </Column>
         </Column>
         {error && <Text text={error} color="error" />}
+        {error2 && <Text text={error2} color="error" />}
         <Button text="Next" preset="primary" onClick={onClickNext} disabled={disabled} />
       </Column>
     </Content>
