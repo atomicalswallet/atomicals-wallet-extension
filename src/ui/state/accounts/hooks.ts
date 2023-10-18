@@ -204,7 +204,7 @@ export function useAtomicalsCallback() {
     );
     // console.log({ _utxo });
     const btc_amount = (res.regularsValue / (10000 * 10000)).toString();
-    const amount = (res.confirmedValue / (10000 * 10000)).toString();
+    const amount = ((res.confirmedValue + res.unconfirmedValue) / (10000 * 10000)).toString();
     const atomical_amount = (res.atomicalsValue! / (10000 * 10000)).toString();
     const inscription_amount = (res.ordinalsValue! / (10000 * 10000)).toString();
     dispatch(

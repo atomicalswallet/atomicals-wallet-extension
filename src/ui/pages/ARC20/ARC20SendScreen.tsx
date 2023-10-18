@@ -203,7 +203,7 @@ function Step1({
         <Column gap="lg" full>
           <Column>
             <Text text={`${contextData.tokenBalance.$ticker} Balance`} color="textDim" />
-            <Text text={`${contextData.tokenBalance.value} ${contextData.tokenBalance.$ticker}`} size="xxl" textCenter my="lg" />
+            <Text text={`${contextData.tokenBalance.value.toLocaleString()} ${contextData.tokenBalance.$ticker}`} size="xxl" textCenter my="lg" />
           </Column>
 
           {/* <Column>

@@ -491,7 +491,7 @@ function ARC20List({ tabKey }: { tabKey: WalletTabScreenTabKey }) {
                   <Text text={`UTXO: ${utxo.txid?.slice(0, 6)}...${utxo.txid?.slice(-4)}:${utxo.index}`} color="textDim" />
                   <Row full>
                     <Text text={'Including:'} size="xs" color="textDim" />
-                    <Text text={`${utxo.value}`} size="xs" />
+                    <Text text={`${utxo.value.toLocaleString()}`} size="xs" />
                     <Text text={'sats, '} size="xs" color="textDim" />
                     <Text text={`${utxo.atomicals.length}`} size="xs" />
                     <Text text={'atomicals'} color="textDim" />

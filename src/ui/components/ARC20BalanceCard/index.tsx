@@ -61,7 +61,7 @@ export default function ARC20BalanceCard(props: ARC20BalanceCardProps) {
         <Row style={{ borderTopWidth: 1, borderColor: 'rgba(255,255,255,0.1)' }} />
         <Row justifyBetween itemsCenter>
           <Text text="Balance:" color="textDim" size="xs" />
-          <Text text={value} size="xs" />
+          <Text text={value.toLocaleString()} size="xs" />
         </Row>
       </Column>
     </Card>

@@ -28,6 +28,7 @@ export function useCreateBitcoinTxCallback() {
   const fromAddress = useAccountAddress();
   const utxos = useUtxos();
   const fetchUtxos = useFetchUtxosCallback();
+
   return useCallback(
     async (toAddressInfo: ToAddressInfo, toAmount: number, feeRate?: number, receiverToPayFee = false) => {
       let _utxos = utxos;

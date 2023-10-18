@@ -109,14 +109,14 @@ function Preview(props: { selectValues: string[]; updateStep: (step: Step) => vo
             <Column mt="lg">
               <Text text="NFTs" preset="regular" color="textDim" />
               <Text
-                text={`All Include: ${selectAtomcals.map((o) => o.value).reduce((pre, cur) => pre + cur, 0)} sats`}
+                text={`All Include: ${selectAtomcals.map((o) => o.value).reduce((pre, cur) => pre + cur, 0).toLocaleString()} sats`}
                 color="textDim"
                 size="xs"
               />
               <Grid columns={3}>
                 <Text text={'Preview'} textCenter color="text" size="sm" />
                 <Text text={'AtomicalNumber'} textCenter size="sm" />
-                <Text text={'value'} textCenter size="sm" />
+                <Text text={'Value'} textCenter size="sm" />
               </Grid>
               {selectAtomcals.map((data, index) => {
                 const { type, content } = returnImageType(data);
@@ -126,7 +126,7 @@ function Preview(props: { selectValues: string[]; updateStep: (step: Step) => vo
                       {type === 'realm' ? <Text text={content} /> : <Image src={content} size={24} />}
                     </Column>
                     <Text text={`# ${data.atomical_number}`} textCenter color="textDim" size="xs" />
-                    <Text text={data.value} textCenter color="textDim" size="xs" />
+                    <Text text={data.value.toLocaleString()} textCenter color="textDim" size="xs" />
                   </Grid>
                 );
               })}

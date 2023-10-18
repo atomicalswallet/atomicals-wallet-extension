@@ -1297,7 +1297,7 @@ export class WalletController extends BaseController {
     // }
 
     const { scripthash, output } = detectAddressTypeToScripthash(address);
-    const res = await this.atomicalApi.electrumApi.atomicalsByScripthash(scripthash, false);
+    const res = await this.atomicalApi.electrumApi.atomicalsByScripthash(scripthash, true);
     let cursor = 0;
     const size = 100;
     let hasMore = true;
@@ -1325,7 +1325,10 @@ export class WalletController extends BaseController {
     let atomicalsWithOrdinalsValue = 0;
     const mergedUTXOs: AtomUtxo[] = [];
     for (const utxo of all) {
-      if (!unconfirmedVinSet.has(utxo.txid + ':' + utxo.vout)) {
+      if (unconfirmedVinSet.has(utxo.txid + ':' + utxo.vout)) {
+        unconfirmedValue += utxo.value;
+        unconfirmedUTXOs.push(utxo);
+      } else {
         confirmedValue += utxo.value;
         confirmedUTXOs.push(utxo);
 
@@ -1357,9 +1360,6 @@ export class WalletController extends BaseController {
           regularsUTXOs.push(utxo);
           regularsValue += utxo.value;
         }
-      } else {
-        unconfirmedValue += utxo.value;
-        unconfirmedUTXOs.push(utxo);
       }
     }
     const atomicalFTs: (IAtomicalItem & { utxos: AtomUtxo[] })[] = [];

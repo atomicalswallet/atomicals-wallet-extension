@@ -15,7 +15,6 @@ import { fontSizes } from '@/ui/theme/font';
 import { spacing } from '@/ui/theme/spacing';
 import { useWallet } from '@/ui/utils';
 import { RightOutlined } from '@ant-design/icons';
-import { AtomNetworkType } from '@/shared/types';
 
 interface Setting {
   label?: string;
@@ -62,14 +61,14 @@ const SettingList: Setting[] = [
     route: '/settings/network-type',
     right: true
   },
-  {
-    label: 'Change Endpoint',
-    value: AtomNetworkType.ATOMICALS,
-    desc: '',
-    action: 'changeEndPoint',
-    route: '/settings/end-point',
-    right: true
-  },
+  // {
+  //   label: 'Change Endpoint',
+  //   value: AtomNetworkType.ATOMICALS,
+  //   desc: '',
+  //   action: 'changeEndPoint',
+  //   route: '/settings/end-point',
+  //   right: true
+  // },
   {
     label: 'Change Password',
     value: 'Change your lockscreen password',

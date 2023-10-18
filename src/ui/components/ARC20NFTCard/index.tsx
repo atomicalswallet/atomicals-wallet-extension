@@ -53,7 +53,7 @@ export default function ARC20NFTCard(props: ARC20NFTCardProps) {
           <Row justifyCenter>
             {type === 'nft' ? <Image size={24} src={content} /> : <Text text={content} color="textDim" size="xl" />}
           </Row>
-          <Text text={`${value} sats`} size="xs" />
+          <Text text={`${value.toLocaleString()} sats`} size="xs" />
         </Column>
       </Column>
     </Card>
