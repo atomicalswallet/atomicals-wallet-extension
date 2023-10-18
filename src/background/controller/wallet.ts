@@ -1292,10 +1292,9 @@ export class WalletController extends BaseController {
   };
 
   getAtomicals = async (address: string, host?: string): Promise<IWalletBalance> => {
-    // if (host) {
-    //   this.changeAtomicalEndpoint(host);
-    // }
-
+    if (host) {
+      this.changeAtomicalEndpoint(host);
+    }
     const { scripthash, output } = detectAddressTypeToScripthash(address);
     const res = await this.atomicalApi.electrumApi.atomicalsByScripthash(scripthash, true);
     let cursor = 0;

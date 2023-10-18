@@ -93,7 +93,6 @@ function Preview(props: { selectValues: string[]; updateStep: (step: Step) => vo
     setDisabled(false);
   }, [toInfo, wallet, feeRate, loadAtomicalsWithLocation]);
 
-  console.log('atomicalsWithLocation', atomicalsWithLocation)
 
   const outputs = useMemo(() => {
     const outputs = atomicalsWithLocation.map((item) => ({
@@ -111,10 +110,10 @@ function Preview(props: { selectValues: string[]; updateStep: (step: Step) => vo
   const onClickNext = async () => {
     if(atomicalsWithLocation.length === 0) return;
     const obj = {
-      selectedUtxos: atomicalsWithLocation.map(o => o.location) ?? [],
+      selectedUtxos: atomicalsWithLocation.map(o => o.location),
       outputs: outputs ?? []
     };
-    const rawTxInfo = await createARC20NFTTx(obj, toInfo, atomicals.regularsUTXOs, feeRate, false);
+    const rawTxInfo = await createARC20NFTTx(obj, toInfo, atomicals.regularsUTXOs, feeRate);
     if (rawTxInfo && rawTxInfo.err) {
       return setError(rawTxInfo.err);
     }

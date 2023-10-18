@@ -124,12 +124,18 @@ function Step1({
     let _selectedValue = 0;
     const _selectedUtxos: UTXO[] = [];
     let _break_i: number | undefined = undefined;
-    for (let i = 0; i < sorted.length; i++) {
-      _selectedValue += sorted[i].value;
-      _selectedUtxos.push(sorted[i]);
-      if (_selectedValue === currentOutputValue || _selectedValue >= currentOutputValue + DUST_AMOUNT) {
-        _break_i = i;
-        break;
+    const select = sorted.find(o => o.value === currentOutputValue);
+    if(select) {
+      _selectedValue += select.value;
+      _selectedUtxos.push(select);
+    } else {
+      for (let i = 0; i < sorted.length; i++) {
+        _selectedValue += sorted[i].value;
+        _selectedUtxos.push(sorted[i]);
+        if (_selectedValue === currentOutputValue || _selectedValue >= currentOutputValue + DUST_AMOUNT) {
+          _break_i = i;
+          break;
+        }
       }
     }
 
@@ -202,7 +208,7 @@ function Step1({
       type: contextData?.tokenBalance?.type,
       outputs: outputs ?? [],
     };
-    const rawTxInfo = await createARC20Tx(obj, toInfo, atomicals.regularsUTXOs, feeRate, false);
+    const rawTxInfo = await createARC20Tx(obj, toInfo, atomicals.regularsUTXOs, feeRate);
     if(rawTxInfo && rawTxInfo.err) {
       return setError(rawTxInfo.err);
     }

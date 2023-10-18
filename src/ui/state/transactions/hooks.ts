@@ -26,8 +26,8 @@ export function useCreateBitcoinTxCallback() {
   const dispatch = useAppDispatch();
   const wallet = useWallet();
   const fromAddress = useAccountAddress();
-  const utxos = useUtxos();
-  const fetchUtxos = useFetchUtxosCallback();
+  // const utxos = useUtxos();
+  // const fetchUtxos = useFetchUtxosCallback();
   const atomicals = useAtomicals()
 
   return useCallback(
@@ -72,7 +72,7 @@ export function useCreateBitcoinTxCallback() {
       };
       return rawTxInfo;
     },
-    [dispatch, wallet, fromAddress, utxos, fetchUtxos]
+    [dispatch, wallet, fromAddress, atomicals]
   );
 }
 
@@ -87,7 +87,6 @@ export function useCreateARC20TxCallback() {
       toAddressInfo: ToAddressInfo,
       nonAtomUtxos: UTXO[],
       satsbyte: number,
-      preload: boolean
     ): Promise<RawTxInfo | undefined> => {
       if (transferOptions.type !== 'FT') {
         throw 'Atomical is not an FT. It is expected to be an FT type';
@@ -103,8 +102,7 @@ export function useCreateARC20TxCallback() {
       let expectedFundinng = 0;
       for (const utxo of transferOptions.selectedUtxos) {
         // Add the atomical input, the value from the input counts towards the total satoshi amount required
-        if (!preload) {
-          const { output } = detectAddressTypeToScripthash(fromAddress);
+        const { output } = detectAddressTypeToScripthash(fromAddress);
           psbt.addInput({
             hash: utxo.txid,
             index: utxo.index,
@@ -114,19 +112,15 @@ export function useCreateARC20TxCallback() {
             },
             tapInternalKey: Buffer.from(xpub, 'hex')
           });
-        }
-
         tokenBalanceIn += utxo.value;
         tokenInputsLength++;
       }
 
       for (const output of transferOptions.outputs) {
-        if (!preload) {
-          psbt.addOutput({
-            value: output.value,
-            address: output.address
-          });
-        }
+        psbt.addOutput({
+          value: output.value,
+          address: output.address
+        });
         tokenBalanceOut += output.value;
         tokenOutputsLength++;
       }
@@ -163,51 +157,49 @@ export function useCreateARC20TxCallback() {
         expectedFundinng = expectedSatoshisDeposit;
       }
       // add nonAtomUtxos least to expected deposit value
-      if (!preload) {
-        let addedValue = 0;
-        const addedInputs: UTXO[] = [];
+      let addedValue = 0;
+      const addedInputs: UTXO[] = [];
 
-        for (let i = 0; i < nonAtomUtxos.length; i++) {
-          const utxo = nonAtomUtxos[i];
+      for (let i = 0; i < nonAtomUtxos.length; i++) {
+        const utxo = nonAtomUtxos[i];
 
-          if (addedValue >= expectedSatoshisDeposit) {
-            break;
-          } else {
-            addedValue += utxo.value;
-            addedInputs.push(utxo);
-            const { output } = detectAddressTypeToScripthash(fromAddress);
-            psbt.addInput({
-              hash: utxo.txid,
-              index: utxo.index,
-              witnessUtxo: {
-                value: utxo.value,
-                script: Buffer.from(output as string, 'hex')
-              },
-              tapInternalKey: Buffer.from(xpub, 'hex')
-            });
-          }
-        }
-
-        if (addedValue - expectedSatoshisDeposit >= 546) {
-          psbt.addOutput({
-            value: addedValue - expectedSatoshisDeposit,
-            address: fromAddress
+        if (addedValue >= expectedSatoshisDeposit) {
+          break;
+        } else {
+          addedValue += utxo.value;
+          addedInputs.push(utxo);
+          const { output } = detectAddressTypeToScripthash(fromAddress);
+          psbt.addInput({
+            hash: utxo.txid,
+            index: utxo.index,
+            witnessUtxo: {
+              value: utxo.value,
+              script: Buffer.from(output as string, 'hex')
+            },
+            tapInternalKey: Buffer.from(xpub, 'hex')
           });
         }
-        const psbtHex = psbt.toHex();
-
-        const s = await wallet.signPsbtReturnHex(psbtHex, { autoFinalized: true });
-        const signPsbt = Psbt.fromHex(s);
-        const tx = signPsbt.extractTransaction();
-
-        const rawTxInfo: RawTxInfo = {
-          psbtHex,
-          rawtx: tx.toHex(),
-          toAddressInfo,
-          fee: expectedFundinng
-        };
-        return rawTxInfo;
       }
+
+      if (addedValue - expectedSatoshisDeposit >= 546) {
+        psbt.addOutput({
+          value: addedValue - expectedSatoshisDeposit,
+          address: fromAddress
+        });
+      }
+      const psbtHex = psbt.toHex();
+
+      const s = await wallet.signPsbtReturnHex(psbtHex, { autoFinalized: true });
+      const signPsbt = Psbt.fromHex(s);
+      const tx = signPsbt.extractTransaction();
+
+      const rawTxInfo: RawTxInfo = {
+        psbtHex,
+        rawtx: tx.toHex(),
+        toAddressInfo,
+        fee: expectedFundinng
+      };
+      return rawTxInfo;
     },
     [dispatch, wallet, account, fromAddress]
   );
@@ -227,7 +219,6 @@ export function useCreateARCNFTTxCallback() {
       toAddressInfo: ToAddressInfo,
       nonAtomUtxos: UTXO[],
       satsbyte: number,
-      preload: boolean
     ): Promise<RawTxInfo | undefined> => {
       const pubkey = account.pubkey;
       const xpub = (toXOnly(Buffer.from(pubkey, 'hex')) as Buffer).toString('hex');
@@ -246,26 +237,22 @@ export function useCreateARCNFTTxCallback() {
 
       for (const utxo of transferOptions.selectedUtxos) {
         // Add the atomical input, the value from the input counts towards the total satoshi amount required
-        if (!preload) {
-          psbt.addInput({
-            hash: utxo.txid,
-            index: utxo.index,
-            witnessUtxo: {
-              value: utxo.value,
-              script: Buffer.from(utxo.script as string, 'hex')
-            },
-            tapInternalKey: Buffer.from(xpub, 'hex')
-          });
-        }
+        psbt.addInput({
+          hash: utxo.txid,
+          index: utxo.index,
+          witnessUtxo: {
+            value: utxo.value,
+            script: Buffer.from(utxo.script as string, 'hex')
+          },
+          tapInternalKey: Buffer.from(xpub, 'hex')
+        });
       }
 
       for (const output of transferOptions.outputs) {
-        if (!preload) {
-          psbt.addOutput({
-            value: output.value,
-            address: output.address
-          });
-        }
+        psbt.addOutput({
+          value: output.value,
+          address: output.address
+        });
       }
       // let expectedFundinng = 0;
       // const { expectedSatoshisDeposit } = calculateFundsRequired(

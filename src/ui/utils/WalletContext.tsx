@@ -29,6 +29,7 @@ import {
 } from '@/shared/types';
 import { IWalletBalance } from '@/background/service/interfaces/api';
 import { AtomicalService } from '@/background/service/atomical';
+import { UTXO as IUTXO } from '@/background/service/interfaces/api';
 
 
 
@@ -131,7 +132,7 @@ export interface WalletController {
   sendBTC(data: {
     to: string;
     amount: number;
-    utxos: UTXO[];
+    utxos: IUTXO[];
     receiverToPayFee: boolean;
     feeRate: number;
   }): Promise<string>;

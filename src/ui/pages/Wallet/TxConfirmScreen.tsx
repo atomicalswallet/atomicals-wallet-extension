@@ -21,7 +21,7 @@ export default function TxConfirmScreen() {
           window.history.go(-1);
         }}
       />
-      params={{ data: { psbtHex: rawTxInfo.psbtHex, type: TxType.SEND_BITCOIN, rawTxInfo } }}
+      params={{ data: { psbtHex: rawTxInfo.psbtHex, type: TxType.SEND_BITCOIN, rawTxInfo } as any }}
       handleCancel={() => {
         window.history.go(-1);
       }}
