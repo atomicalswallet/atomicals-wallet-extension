@@ -103,15 +103,22 @@ function task_uglify(cb) {
 
 function task_package(cb) {
   if (options.env == 'pro') {
+    const dateString = new Date()
+      .toLocaleString()
+      .replace(/T/, '-')
+      .replace(/\..+/, '')
+      .replace(/:/g, '-')
+      .replace(/\//g, '-')
+      .replace(' ', '-');
     if (options.browser == 'firefox') {
       return gulp
         .src(`dist/${options.browser}/**/*`)
-        .pipe(zip(`${brandName}-${options.browser}-${options.manifest}-v${version}.xpi`))
+        .pipe(zip(`${brandName}-${options.browser}-${options.manifest}-v${version}-${dateString}.xpi`))
         .pipe(gulp.dest('./dist'));
     } else {
       return gulp
         .src(`dist/${options.browser}/**/*`)
-        .pipe(zip(`${brandName}-${options.browser}-${options.manifest}-v${version}.zip`))
+        .pipe(zip(`${brandName}-${options.browser}-${options.manifest}-v${version}-${dateString}.zip`))
         .pipe(gulp.dest('./dist'));
     }
   }

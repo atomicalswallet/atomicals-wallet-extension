@@ -269,15 +269,6 @@ export function useCreateARCNFTTxCallback() {
         }
         return a + ret;
       }, 0);
-      if (expectedSatoshisDeposit <= 546) {
-        console.log('Invalid expectedSatoshisDeposit. Developer Error.');
-        return {
-          psbtHex: '',
-          rawtx: '',
-          toAddressInfo,
-          err: 'Invalid expectedSatoshisDeposit.'
-        };
-      }
 
       if (transferOptions.selectedUtxos.length === 0) {
         expectedFundinng = 0;
