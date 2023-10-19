@@ -30,20 +30,13 @@ export default function ARC20TxConfirmScreen() {
         navigate('MainScreen');
       }}
       handleConfirm={() => {
-         wallet.validateAtomical(rawTxInfo.rawtx).then((res) => {
-          console.log(res.success)
-          if(res.success) {
-            // pushBitcoinTx(rawTxInfo.rawtx).then(({ success, txid, error }) => {
-            //   if (success) {
-            //     navigate('TxSuccessScreen', { txid });
-            //   } else {
-            //     navigate('TxFailScreen', { error });
-            //   }
-            // });
+        pushBitcoinTx(rawTxInfo.rawtx).then(({ success, txid, error }) => {
+          if (success) {
+            navigate('TxSuccessScreen', { txid });
+          } else {
+            navigate('TxFailScreen', { error });
           }
-         }).catch((err) => {
-            console.log(err)
-         });
+        });
       }}
     />
   );
