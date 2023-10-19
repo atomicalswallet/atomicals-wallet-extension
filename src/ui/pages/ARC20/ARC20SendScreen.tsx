@@ -166,6 +166,11 @@ function Step1({
       return { value: f.value, address: toInfo.address, ticker: contextData.tokenBalance.$ticker as string, change: false };
     });
     if (changeAmount > 0) {
+      if((_selectedValue - changeAmount) !== currentOutputValue) {
+        return {
+          error: `Remaining Balance less than ${DUST_AMOUNT}`,
+        }
+      }
       if(changeAmount < DUST_AMOUNT) {
         return {
           error: `Remaining Balance less than ${DUST_AMOUNT}`,
@@ -185,10 +190,14 @@ function Step1({
         ticker: contextData.tokenBalance.$ticker!,
         change: true
       });
+    } else {
+      if(_selectedValue !== currentOutputValue) {
+        return {
+          error: 'The FT is unconfirmed.',
+        }
+      }
     }
-
     finalTokenOutputs = [...finalTokenOutputs];
-
     return {
       outputs: finalTokenOutputs,
       atomicalsId: contextData.tokenBalance.atomical_id,

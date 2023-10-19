@@ -14,6 +14,7 @@ import { FeeRateBar } from '@/ui/components/FeeRateBar';
 import { IAtomicalItem, UTXO } from '@/background/service/interfaces/api';
 import { ElectrumApi } from '@/background/service/eletrum';
 import { ELECTRUMX_HTTP_PROXY } from '@/shared/constant';
+import { useTools } from '@/ui/components/ActionComponent';
 
 interface LocationState {
   ticker: string;
@@ -47,8 +48,6 @@ function Preview(props: { selectValues: string[]; updateStep: (step: Step) => vo
   const [error, setError] = useState('');
   const [disabled, setDisabled] = useState(true);
   const createARC20NFTTx = useCreateARCNFTTxCallback();
-
-
 
   const selectAtomcalsNFTs = useMemo(() => {
     if (!atomicals.atomicalNFTs) return [];
@@ -238,6 +237,8 @@ const ARC20NFTScreen = () => {
   const account = useCurrentAccount();
 
   const atomicals = useAtomicals();
+  const tools = useTools();
+
   useEffect(() => {
     wallet.getBRC20Summary(account.address, ticker).then((tokenSummary) => {
       setTokenSummary(tokenSummary);
@@ -250,6 +251,17 @@ const ARC20NFTScreen = () => {
   const [checkedList, setCheckedList] = useState<string[]>([]);
 
   const onChange = (checkedValues: any) => {
+    if(checkedValues) {
+      let find = false;
+      checkedValues.forEach((v: string) => {
+        if(atomicals.unconfirmedUTXOs.find(o => o.atomicals?.includes(v) )) {
+          find = true;
+        }
+      })
+      if(find) {
+        return tools.toastError('The NFT is unconfirmed.');
+      }
+    }
     setCheckedList(checkedValues);
   };
 
