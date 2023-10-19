@@ -1,7 +1,7 @@
 import { RawTxInfo, TxType } from '@/shared/types';
 import { Header } from '@/ui/components';
-import { usePushBitcoinTxCallback, usePushOrdinalsTxCallback } from '@/ui/state/transactions/hooks';
-import { useLocationState } from '@/ui/utils';
+import { usePushBitcoinTxCallback } from '@/ui/state/transactions/hooks';
+import { useLocationState, useWallet } from '@/ui/utils';
 
 import { SignPsbt } from '../Approval/components';
 import { useNavigate } from '../MainRoute';
@@ -13,6 +13,7 @@ interface LocationState {
 export default function ARC20TxConfirmScreen() {
   const { rawTxInfo } = useLocationState<LocationState>();
   const navigate = useNavigate();
+  const wallet = useWallet();
   const pushBitcoinTx = usePushBitcoinTxCallback();
   return (
     <SignPsbt
@@ -29,13 +30,20 @@ export default function ARC20TxConfirmScreen() {
         navigate('MainScreen');
       }}
       handleConfirm={() => {
-        pushBitcoinTx(rawTxInfo.rawtx).then(({ success, txid, error }) => {
-          if (success) {
-            navigate('TxSuccessScreen', { txid });
-          } else {
-            navigate('TxFailScreen', { error });
+         wallet.validateAtomical(rawTxInfo.rawtx).then((res) => {
+          console.log(res.success)
+          if(res.success) {
+            // pushBitcoinTx(rawTxInfo.rawtx).then(({ success, txid, error }) => {
+            //   if (success) {
+            //     navigate('TxSuccessScreen', { txid });
+            //   } else {
+            //     navigate('TxFailScreen', { error });
+            //   }
+            // });
           }
-        });
+         }).catch((err) => {
+            console.log(err)
+         });
       }}
     />
   );

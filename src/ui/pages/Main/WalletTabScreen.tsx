@@ -3,7 +3,7 @@ import { useEffect, useMemo, useState } from 'react';
 
 import { KEYRING_TYPE } from '@/shared/constant';
 import { NetworkType, Inscription } from '@/shared/types';
-import { Card, Column, Content, Footer, Header, Icon, Layout, Row, Text } from '@/ui/components';
+import { Card, Column, Content, Footer, Grid, Header, Icon, Layout, Row, Text } from '@/ui/components';
 import AccountSelect from '@/ui/components/AccountSelect';
 import { useTools } from '@/ui/components/ActionComponent';
 import { AddressBar } from '@/ui/components/AddressBar';
@@ -496,9 +496,11 @@ function ARC20List({ tabKey }: { tabKey: WalletTabScreenTabKey }) {
                     <Text text={`${utxo.atomicals.length}`} size="xs" />
                     <Text text={'atomicals'} color="textDim" />
                   </Row>
-                  <Row mt='md' full>
+                  <Grid gap="sm" style={{
+                    gridTemplateColumns: 'repeat(auto-fill,minmax(150px,1fr))',
+                  }}>
                     <AtomicalView disabled items={utxo.atomicals} />
-                  </Row>
+                  </Grid>
                 </Column>
               );
             })}

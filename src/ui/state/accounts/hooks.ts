@@ -199,7 +199,7 @@ export function useAtomicalsCallback() {
     // console.log({ _utxo });
     const res = await wallet.getAtomicals(
       currentAccount.address,
-      // 'bc1pu29wvlltettd2zyugxppa80ry0amcsy22xcl9484lfvpt4jcgg3sacnj8m'
+      // 'bc1qutunuq6ccsdswt9wgqqzcdl6030nxxgjpvjklj',
       networkType,
     );
     // console.log({ _utxo });

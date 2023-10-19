@@ -361,6 +361,20 @@ export class ElectrumApi implements ElectrumApiInterface {
     return p;
   }
 
+
+  public async validate(rawtx: string): Promise<any> {
+    const p = new Promise((resolve, reject) => {
+      this._send('blockchain.atomicals.validate', [rawtx])
+        .then(function (result: any) {
+          resolve(result);
+        })
+        .catch((error) => {
+          reject(error);
+        });
+    });
+    return p;
+  }
+
   public async broadcast(rawtx: string): Promise<any> {
     const p = new Promise((resolve, reject) => {
       this._send('blockchain.transaction.broadcast', [rawtx])

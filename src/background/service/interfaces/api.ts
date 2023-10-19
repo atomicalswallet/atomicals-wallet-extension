@@ -28,6 +28,7 @@ export interface ElectrumApiInterface {
   ) => Promise<any>;
   getTx: (txid: string, verbose?: boolean) => Promise<any>;
   serverVersion: () => Promise<any>;
+  validate: (rawtx: string) => Promise<any>;
   broadcast: (rawtx: string) => Promise<any>;
   history: (scripthash: string) => Promise<any>;
   // Atomicals API

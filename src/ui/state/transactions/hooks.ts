@@ -192,14 +192,31 @@ export function useCreateARC20TxCallback() {
       const s = await wallet.signPsbtReturnHex(psbtHex, { autoFinalized: true });
       const signPsbt = Psbt.fromHex(s);
       const tx = signPsbt.extractTransaction();
-
-      const rawTxInfo: RawTxInfo = {
-        psbtHex,
-        rawtx: tx.toHex(),
-        toAddressInfo,
-        fee: expectedFundinng
-      };
-      return rawTxInfo;
+      try {
+        const validate = await wallet.validateAtomical(tx.toHex());
+        if(validate){
+          const rawTxInfo: RawTxInfo = {
+            psbtHex,
+            rawtx: tx.toHex(),
+            toAddressInfo,
+            fee: expectedFundinng
+          };
+          return rawTxInfo;
+        } else {
+          return {
+            psbtHex: '',
+            rawtx: '',
+            toAddressInfo,
+            err: validate.message
+          };
+        }
+      } catch(err) {
+        return {
+          psbtHex: '',
+          rawtx: '',
+          err: 'unknown method blockchain.atomicals.validate',
+        }
+      }
     },
     [dispatch, wallet, account, fromAddress]
   );
@@ -309,6 +326,7 @@ export function useCreateARCNFTTxCallback() {
       const psbtHex = psbt.toHex();
 
       const s = await wallet.signPsbtReturnHex(psbtHex, { autoFinalized: true });
+
       const signPsbt = Psbt.fromHex(s);
       const tx = signPsbt.extractTransaction();
 

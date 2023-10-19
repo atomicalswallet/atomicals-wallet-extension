@@ -1291,6 +1291,11 @@ export class WalletController extends BaseController {
     };
   };
 
+  validateAtomical = async (rawtx: string) => {
+    return this.atomicalApi.electrumApi.validate(rawtx);
+  }
+
+
   getAtomicals = async (address: string, host?: string): Promise<IWalletBalance> => {
     if (host) {
       this.changeAtomicalEndpoint(host);

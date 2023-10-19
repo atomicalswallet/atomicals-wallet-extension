@@ -205,6 +205,8 @@ export interface WalletController {
 
   getBRC20Summary(address: string, ticker: string): Promise<AddressTokenSummary>;
 
+  validateAtomical: (rawtx: string) => Promise<any>;
+
   getAtomicals(address: string, network: string): Promise<IWalletBalance>;
 
   expireUICachedData(address: string): Promise<void>;
