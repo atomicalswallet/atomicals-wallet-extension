@@ -83,6 +83,10 @@ function Step1({
       return;
     }
 
+    if(Number(inputAmount) > contextData.tokenBalance.value) {
+      return setError(`Insufficient ${contextData.tokenBalance.$ticker} balance`);
+    }
+
     if(error2) {
       return;
     }
@@ -191,7 +195,7 @@ function Step1({
         change: true
       });
     } else {
-      if(_selectedValue !== currentOutputValue) {
+      if(!error && _selectedValue < currentOutputValue) {
         return {
           error: 'The FT is unconfirmed.',
         }

@@ -2,7 +2,7 @@ import compareVersions from 'compare-versions';
 import cloneDeep from 'lodash/cloneDeep';
 
 import { createPersistStore } from '@/background/utils';
-import { EVENTS } from '@/shared/constant';
+import { ELECTRUMX_HTTP_PROXY, EVENTS } from '@/shared/constant';
 import eventBus from '@/shared/eventBus';
 import {
   Account,
@@ -42,6 +42,7 @@ export interface PreferenceStore {
   currency: string;
   addressType: AddressType;
   networkType: NetworkType;
+  atomicalEndPoint: string;
   keyringAlianNames: {
     [key: string]: string;
   };
@@ -114,6 +115,7 @@ class PreferenceService {
         currency: 'USD',
         addressType: AddressType.M44_P2TR,
         networkType: NetworkType.MAINNET,
+        atomicalEndPoint: ELECTRUMX_HTTP_PROXY,
         keyringAlianNames: {},
         accountAlianNames: {},
         uiCachedData: {},
@@ -159,6 +161,10 @@ class PreferenceService {
 
     if (!this.store.networkType) {
       this.store.networkType = NetworkType.MAINNET;
+    }
+
+    if(!this.store.atomicalEndPoint) {
+      this.store.atomicalEndPoint = ELECTRUMX_HTTP_PROXY;
     }
 
     if (this.store.currentAccount) {
@@ -340,6 +346,16 @@ class PreferenceService {
 
   setNetworkType = (networkType: NetworkType) => {
     this.store.networkType = networkType;
+  };
+
+  //atomical end point
+
+  getAtomicalEndPoint = () => {
+    return this.store.atomicalEndPoint;
+  };
+
+  setAtomicalEndPoint = (host: string) => {
+    this.store.atomicalEndPoint = host;
   };
 
   // currentKeyringIndex

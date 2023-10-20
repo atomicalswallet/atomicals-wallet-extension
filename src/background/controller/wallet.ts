@@ -709,6 +709,15 @@ export class WalletController extends BaseController {
     return NETWORK_TYPES[networkType].name;
   };
 
+  getAtomicalEndPoint = () => {
+    const endPointHost = preferenceService.getAtomicalEndPoint();
+    return endPointHost;
+  };
+
+  setAtomicalEndPoint = (host: string) => {
+    preferenceService.setAtomicalEndPoint(host);
+  }
+
   sendBTC = async ({
     to,
     amount,
@@ -1297,7 +1306,8 @@ export class WalletController extends BaseController {
 
 
   getAtomicals = async (address: string, host?: string): Promise<IWalletBalance> => {
-    if (host) {
+    // const host = this.getAtomicalEndPoint();
+    if(host) {
       this.changeAtomicalEndpoint(host);
     }
     const { scripthash, output } = detectAddressTypeToScripthash(address);
