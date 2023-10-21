@@ -72,10 +72,11 @@ export function useChangeNetworkTypeCallback() {
 
 export function useChangeAtomNetworkTypeCallback() {
   const dispatch = useAppDispatch();
+  const wallet = useWallet();
   return useCallback(
     async (type: AtomNetworkType) => {
       // console.log('useChangeAtomNetworkTypeCallback', type)
-      // await wallet.setAtomicalEndPoint(type)
+      await wallet.setAtomicalEndPoint(type)
       dispatch(accountActions.expireBalance());
       dispatch(
         settingsActions.updateSettings({

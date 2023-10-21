@@ -274,11 +274,14 @@ const Main = () => {
         }
       }
 
+
       if (!self.settingsLoaded) {
         const networkType = await wallet.getNetworkType();
+        const atomNetworkType = await wallet.getAtomicalEndPoint();
         dispatch(
           settingsActions.updateSettings({
-            networkType
+            networkType,
+            atomNetworkType,
           })
         );
 

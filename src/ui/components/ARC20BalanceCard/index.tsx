@@ -5,7 +5,7 @@ import { Card } from '../Card';
 import { Column } from '../Column';
 import { Row } from '../Row';
 import { Text } from '../Text';
-import { findValueInDeepObject } from '@/ui/utils';
+import { returnImageType } from '@/ui/utils';
 import { Image } from '../Image';
 import { IAtomicalItem } from '@/background/service/interfaces/api';
 
@@ -19,6 +19,8 @@ export default function ARC20BalanceCard(props: ARC20BalanceCardProps) {
     tokenBalance: { $ticker, value, mint_data },
     onClick
   } = props;
+
+  const { type, content, tag} = returnImageType(props.tokenBalance)
 
   return (
     <Card
@@ -35,13 +37,14 @@ export default function ARC20BalanceCard(props: ARC20BalanceCardProps) {
       <Column full>
         <Row justifyBetween itemsCenter>
           <Row itemsCenter>
-            <Image
-              size={16}
-              src={`data:image/png;base64,${Buffer.from(
-                findValueInDeepObject(mint_data?.fields, '$d'),
-                'hex'
-              ).toString('base64')}`}
-            />
+            {
+              content && (
+                <Image
+                  size={16}
+                  src={content}
+                />
+              )
+            }
             <Text text={$ticker} color="blue" />
           </Row>
           {/* <Tooltip

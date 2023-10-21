@@ -1305,8 +1305,8 @@ export class WalletController extends BaseController {
   }
 
 
-  getAtomicals = async (address: string, host?: string): Promise<IWalletBalance> => {
-    // const host = this.getAtomicalEndPoint();
+  getAtomicals = async (address: string): Promise<IWalletBalance> => {
+    const host = this.getAtomicalEndPoint();
     if(host) {
       this.changeAtomicalEndpoint(host);
     }

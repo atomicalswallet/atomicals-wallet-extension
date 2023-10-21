@@ -25,7 +25,8 @@ import {
   DecodedPsbt,
   WalletConfig,
   UTXO_Detail,
-  SignPsbtOptions
+  SignPsbtOptions,
+  AtomNetworkType
 } from '@/shared/types';
 import { IWalletBalance } from '@/background/service/interfaces/api';
 import { AtomicalService } from '@/background/service/atomical';
@@ -206,6 +207,10 @@ export interface WalletController {
   getBRC20Summary(address: string, ticker: string): Promise<AddressTokenSummary>;
 
   validateAtomical: (rawtx: string) => Promise<any>;
+
+  getAtomicalEndPoint: () => Promise<AtomNetworkType>;
+
+  setAtomicalEndPoint: (host: string) => void;
 
   getAtomicals(address: string, network: string): Promise<IWalletBalance>;
 

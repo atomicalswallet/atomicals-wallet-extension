@@ -165,6 +165,7 @@ class PreferenceService {
 
     if(!this.store.atomicalEndPoint) {
       this.store.atomicalEndPoint = ELECTRUMX_HTTP_PROXY;
+      console.log(this.store)
     }
 
     if (this.store.currentAccount) {
@@ -355,6 +356,7 @@ class PreferenceService {
   };
 
   setAtomicalEndPoint = (host: string) => {
+    console.log('setAtomicalEndPoint', host, this)
     this.store.atomicalEndPoint = host;
   };
 

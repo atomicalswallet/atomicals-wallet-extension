@@ -1,11 +1,9 @@
-
 // import { TokenBalance } from '@/shared/types';
 import { Card } from '../Card';
 import { Column } from '../Column';
 import { Row } from '../Row';
 import { Text } from '../Text';
 import { returnImageType } from '@/ui/utils';
-import { Image } from '../Image';
 import { Tag } from '../Tag';
 import Checkbox from '../Checkbox';
 import { IAtomicalItem } from '@/background/service/interfaces/api';
@@ -20,13 +18,63 @@ export interface ARC20NFTCardProps {
 
 export default function ARC20NFTCard(props: ARC20NFTCardProps) {
   const {
-    tokenBalance: { $ticker, value, mint_data, atomical_number, atomical_id },
+    tokenBalance: { value, atomical_number, atomical_id },
     checkbox,
     selectvalues,
     onClick
   } = props;
 
-  const { type, content, tag } = returnImageType(props.tokenBalance);
+  const { type, content, tag, buffer } = returnImageType(props.tokenBalance);
+
+  const Content = () => {
+    if (tag.startsWith('image/')) {
+      return <img className="object-contain w-full h-full" style={{ imageRendering: 'pixelated' }} src={content} />;
+    } else if (tag.startsWith('video/')) {
+      return (
+        <video
+          src={content}
+          autoPlay={true}
+          loop={true}
+          muted={true}
+          controls={true}
+          className="object-cover w-full h-full"
+        />
+      );
+    } else if (tag.startsWith('audio/')) {
+      return <audio src={content} autoPlay={false} loop={true} controls={true} />;
+    } else if (
+      tag.startsWith('font/') ||
+      tag.includes('/html') ||
+      tag.includes('/javascript') ||
+      tag.includes('/css') ||
+      tag.includes('/pdf')
+    ) {
+      return (
+        <iframe
+          src={content}
+          className="object-contain w-full h-full primary-text pointer-events-none"
+          frameBorder="none"
+        />
+      );
+    } else if (tag.startsWith('text/')) {
+      if (buffer) {
+        return (
+          <div className="text-md break-all p-1 flex flex-wrap justify-center items-center aspect-square overflow-hidden leading-none">
+            {buffer && new TextDecoder().decode(new Uint8Array(buffer))}
+          </div>
+        );
+      } else {
+        return null;
+      }
+    }
+    return (
+      <iframe
+        src={content}
+        className="object-contain w-full h-full primary-text pointer-events-none"
+        frameBorder="none"
+      />
+    );
+  };
 
   return (
     <Card
@@ -43,15 +91,27 @@ export default function ARC20NFTCard(props: ARC20NFTCardProps) {
       <Column full gap={'xs'}>
         <Row justifyBetween itemsCenter>
           <Text text={`# ${atomical_number.toLocaleString()}`} color="blue" />
-          {checkbox && (
-            <Checkbox value={`${atomical_id}`} checked={selectvalues?.includes(`${atomical_id}`)} />
-          )}
+          {checkbox && <Checkbox value={`${atomical_id}`} checked={selectvalues?.includes(`${atomical_id}`)} />}
         </Row>
         <Row style={{ borderTopWidth: 1, borderColor: 'rgba(255,255,255,0.1)' }} />
         <Column>
-          <div>{type === 'nft' ? <Tag preset="default" text={tag} /> : <Tag preset="success" text={'Realm'} />}</div>
+          <div>
+            {type === 'unknown' ? (
+              <Text text={'unknown'} />
+            ) : type === 'nft' ? (
+              <Tag preset="default" text={tag} />
+            ) : (
+              <Tag preset="success" text={'Realm'} />
+            )}
+          </div>
           <Row justifyCenter>
-            {type === 'nft' ? <Image size={24} src={content} /> : <Text text={content} color="textDim" size="xl" />}
+            {type === 'unknown' ? (
+              <Text text={'unknown'} />
+            ) : type === 'nft' ? (
+              <Content />
+            ) : (
+              <Text text={content} color="textDim" size="xl" />
+            )}
           </Row>
           <Text text={`${value.toLocaleString()} sats`} size="xs" />
         </Column>

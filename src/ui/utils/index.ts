@@ -167,13 +167,12 @@ export function useLocationState<T>() {
   return state as T;
 }
 
-
 export const calculateFundsRequired = (
   additionalInputValue: number,
   atomicalSats: number,
   satsByte: number,
   mintDataLength = 0,
-  baseTxByteLength = 300,
+  baseTxByteLength = 300
 ) => {
   // The default base includes assumes 1 input and 1 output with room to spare
   const estimatedTxSizeBytes = baseTxByteLength + mintDataLength;
@@ -184,11 +183,9 @@ export const calculateFundsRequired = (
   }
   return {
     expectedSatoshisDeposit,
-    expectedFee,
+    expectedFee
   };
 };
-
-
 
 export const calculateFTFundsRequired = (
   numberOfInputs: number,
@@ -203,15 +200,12 @@ export const calculateFTFundsRequired = (
   const baseOutputSize = 8 + 20 + 4;
 
   let expectedSatoshisDeposit =
-    (estimatedTxSizeBytes +
-      numberOfInputs * baseInputSize +
-      numberOfOutputs * baseOutputSize) *
-    satsByte;
+    (estimatedTxSizeBytes + numberOfInputs * baseInputSize + numberOfOutputs * baseOutputSize) * satsByte;
   if (expectedSatoshisDeposit > 0 && expectedSatoshisDeposit < 546) {
     expectedSatoshisDeposit = 546;
   }
   return {
-    expectedSatoshisDeposit,
+    expectedSatoshisDeposit
   };
 };
 
@@ -245,35 +239,60 @@ export function findValueInDeepObject(obj: any, key: string): any | undefined {
   }
 }
 
+export function tryDecodePunycode(name: string) {
+  if (name.toLowerCase().startsWith('xn--')) {
+    try {
+      return toUnicode(name);
+    } catch (_) {
+      /* empty */
+    }
+  }
+  return name;
+}
 
-export function returnImageType(item: IAtomicalItem): { type: string; content: string; tag: string } {
-  let ct, content, type, tag;
-  if (item.$realm) {
+export function returnImageType(item: IAtomicalItem): { type: string; content: string; tag: string; buffer?: Buffer } {
+  let ct, content, type, tag, buffer;
+  const text =
+    item.$realm ||
+    item.$request_realm ||
+    item.$request_container ||
+    item.$request_subrealm ||
+    item.mint_data?.fields?.args?.request_realm ||
+    item.mint_data?.fields?.args?.request_subrealm ||
+    item.mint_data?.fields?.args?.request_container;
+  if (text) {
     type = 'realm';
-    tag  = 'Realm';
+    tag = 'Realm';
     content = item.$full_realm_name!.toLowerCase().startsWith('xn--')
       ? toUnicode(item.$full_realm_name!)
       : item.$full_realm_name;
+    return { type, content, tag, buffer };
   } else {
-    type = 'nft';
-    ct = findValueInDeepObject(item.mint_data?.fields, '$ct');
-    if (ct) {
-      if (ct.endsWith('webp')) {
-        ct = 'image/webp';
-      } else if (ct.endsWith('svg')) {
-        ct = 'image/svg+xml';
-      } else if (ct.endsWith('png')) {
-        ct = 'image/png';
-      } else if (ct.endsWith('jpg') || ct.endsWith('jpeg')) {
-        ct = 'image/jpeg';
-      } else if (ct.endsWith('gif')) {
-        ct = 'image/gif';
+    if (findValueInDeepObject(item.mint_data?.fields, '$d') && findValueInDeepObject(item.mint_data?.fields, '$ct')) {
+      type = 'nft';
+      ct = findValueInDeepObject(item.mint_data?.fields, '$ct');
+      if (ct) {
+        if (ct.endsWith('webp')) {
+          ct = 'image/webp';
+        } else if (ct.endsWith('svg')) {
+          ct = 'image/svg+xml';
+        } else if (ct.endsWith('png')) {
+          ct = 'image/png';
+        } else if (ct.endsWith('jpg') || ct.endsWith('jpeg')) {
+          ct = 'image/jpeg';
+        } else if (ct.endsWith('gif')) {
+          ct = 'image/gif';
+        }
+        const data = findValueInDeepObject(item.mint_data?.fields, '$d');
+        const b64String = Buffer.from(data, 'hex').toString('base64');
+        content = `data:${ct};base64,${b64String}`;
+        tag = ct;
+        buffer = data ? Buffer.from(data, 'hex') : undefined;
+        return { type, content, tag, buffer };
       }
-      const data = findValueInDeepObject(item.mint_data?.fields, '$d');
-      const b64String = Buffer.from(data, 'hex').toString('base64');
-      content = `data:${ct};base64,${b64String}`;
-      tag = ct;
+    } else {
+      return { type: 'unknown', content: '', tag: 'unknown' };
     }
   }
-  return { type, content, tag };
+  return { type, content, tag, buffer };
 }
