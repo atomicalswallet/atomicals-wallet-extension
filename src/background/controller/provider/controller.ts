@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/ban-ts-comment */
 import { permissionService, sessionService } from '@/background/service';
 import { NETWORK_TYPES } from '@/shared/constant';
 
@@ -245,10 +246,13 @@ class ProviderController extends BaseController {
     const networkType = wallet.getNetworkType();
     const psbtNetwork = toPsbtNetwork(networkType);
     const psbt = Psbt.fromHex(psbtHex, { network: psbtNetwork });
+
     const autoFinalized = options && options.autoFinalized == false ? false : true;
     const toSignInputs = await wallet.formatOptionsToSignInputs(psbtHex, options);
-    await wallet.signPsbt(psbt, toSignInputs, autoFinalized);
-    return psbt.toHex();
+    const signed = await wallet.signPsbt(psbt, toSignInputs, autoFinalized);
+    //@ts-ignore
+    signed.__CACHE.__UNSAFE_SIGN_NONSEGWIT = false;
+    return signed.toHex();
   };
 
   @Reflect.metadata('APPROVAL', [

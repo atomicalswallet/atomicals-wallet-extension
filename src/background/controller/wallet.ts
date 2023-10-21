@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/ban-ts-comment */
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
 /* eslint-disable indent */
 import * as bitcoin from 'bitcoinjs-lib';
@@ -500,6 +501,10 @@ export class WalletController extends BaseController {
         if (v.witnessUtxo?.script.toString('hex') == output?.toString('hex')) {
           v.tapInternalKey = tapInternalKey;
         }
+      }
+      if (keyring.addressType === AddressType.P2PKH) {
+        //@ts-ignore
+        psbt.__CACHE.__UNSAFE_SIGN_NONSEGWIT = true;
       }
     });
 
