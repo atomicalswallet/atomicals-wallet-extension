@@ -199,12 +199,15 @@ export default function TxCreateScreen() {
         </Column>
 
         {error && <Text text={error} color="error" />}
-
         <Button
           disabled={disabled}
           preset="primary"
           text="Next"
           onClick={(e) => {
+            if(rawTxInfo?.err) {
+              setError(rawTxInfo.err);
+              return
+            }
             navigate('TxConfirmScreen', { rawTxInfo });
           }}></Button>
       </Content>

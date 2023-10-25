@@ -173,7 +173,7 @@ export default function WalletTabScreen() {
               full
             />
 
-            {/* <Button
+            <Button
               text="Send"
               preset="default"
               icon="send"
@@ -181,7 +181,7 @@ export default function WalletTabScreen() {
                 navigate('TxCreateScreen');
               }}
               full
-            /> */}
+            />
             {/* {walletConfig.moonPayEnabled && (
               <Button
                 text="Buy"

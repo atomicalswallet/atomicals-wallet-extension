@@ -43,6 +43,7 @@ import ARC20SendScreen from './ARC20/ARC20SendScreen';
 import ARC20NFTScreen from './ARC20/ARC20NFTScreen';
 import ARC20TxConfirmScreen from './ARC20/ARC20TxConfrimScreen';
 import EndPointScreen from './Settings/EndPointScreen';
+import TxCreateScreen from './Wallet/TxCreateScreen';
 
 const routes = {
   BoostScreen: {
@@ -94,10 +95,10 @@ const routes = {
     element: <ReceiveScreen />
   },
 
-  // TxCreateScreen: {
-  //   path: '/wallet/tx/create',
-  //   element: <TxCreateScreen />
-  // },
+  TxCreateScreen: {
+    path: '/wallet/tx/create',
+    element: <TxCreateScreen />
+  },
   TxConfirmScreen: {
     path: '/wallet/tx/confirm',
     element: <TxConfirmScreen />

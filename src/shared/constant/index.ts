@@ -228,8 +228,8 @@ export const NETWORK_TYPES = [
 
 export const ATOM_NETWORK_TYPES = [
   { value: AtomNetworkType.ATOMICALS, label: 'Mainnet(Atomicals)', name: 'livenet', validNames: [0, 'livenet', 'mainnet'] },
-  // { value: AtomNetworkType.WIZZ, label: 'Mainnet(Wizz)', name: 'testnet', validNames: ['testnet'] },
-  { value: AtomNetworkType.ATOMICALS_MARKET, label: 'Mainnet(Atomicalmarket)', name: 'testnet', validNames: ['testnet'] },
+  { value: AtomNetworkType.WIZZ, label: 'Mainnet(Wizz)', name: 'testnet', validNames: ['testnet'] },
+  { value: AtomNetworkType.ATOMICALS_MARKET, label: 'Mainnet(Atomicalmarket)', name: 'livenet', validNames: ['testnet'] },
 ];
 
 export const MINIMUM_GAS_LIMIT = 21000;

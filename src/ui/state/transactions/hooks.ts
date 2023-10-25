@@ -1,9 +1,9 @@
 import { Psbt } from 'bitcoinjs-lib';
 import { useCallback, useMemo } from 'react';
 import * as bitcoin from 'bitcoinjs-lib';
-import { RawTxInfo, ToAddressInfo, TransferFtConfigInterface } from '@/shared/types';
+import { NetworkType, RawTxInfo, ToAddressInfo, TransferFtConfigInterface } from '@/shared/types';
 import { useTools } from '@/ui/components/ActionComponent';
-import { calculateFTFundsRequired, calculateFundsRequired, satoshisToAmount, satoshisToBTC, sleep, useWallet } from '@/ui/utils';
+import { calculateFTFundsRequired, calculateFundsRequired, satoshisToBTC, sleep, useWallet } from '@/ui/utils';
 
 import { AppState } from '..';
 import { useAccountAddress, useAtomicals, useCurrentAccount } from '../accounts/hooks';
@@ -12,6 +12,8 @@ import { useAppDispatch, useAppSelector } from '../hooks';
 import { transactionsActions } from './reducer';
 import { detectAddressTypeToScripthash, toXOnly } from '@/background/service/utils';
 import { UTXO } from '@/background/service/interfaces/utxo';
+import { DUST_AMOUNT } from '@/shared/constant';
+import { calcFee, getAddressType, utxoToInput } from '@/ui/utils/LocalWallet';
 
 export function useTransactionsState(): AppState['transactions'] {
   return useAppSelector((state) => state.transactions);
@@ -26,42 +28,123 @@ export function useCreateBitcoinTxCallback() {
   const dispatch = useAppDispatch();
   const wallet = useWallet();
   const fromAddress = useAccountAddress();
+  const account = useCurrentAccount()
   // const utxos = useUtxos();
   // const fetchUtxos = useFetchUtxosCallback();
   const atomicals = useAtomicals()
 
   return useCallback(
     async (toAddressInfo: ToAddressInfo, toAmount: number, feeRate?: number, receiverToPayFee = false) => {
-      let _utxos = atomicals.regularsUTXOs;
+      let regularsUTXOs = atomicals.regularsUTXOs;
       const safeBalance = atomicals.regularsValue;
       if (safeBalance < toAmount) {
         throw new Error(
-          `Insufficient balance. Non-Inscription balance(${satoshisToAmount(
-            safeBalance
-          )} BTC) is lower than ${satoshisToAmount(toAmount)} BTC `
+          'Insufficient balance '
         );
+      }
+      try {
+        detectAddressTypeToScripthash(toAddressInfo.address);
+      } catch (e) {
+         return {
+          psbtHex: '',
+          rawtx: '',
+          toAddressInfo,
+          err: 'Please ensure all addresses have been entered correctly.'
+        };
       }
 
       if (!feeRate) {
         const summary = await wallet.getFeeSummary();
         feeRate = summary.list[1].feeRate;
       }
-      const psbtHex = await wallet.sendBTC({
-        to: toAddressInfo.address,
-        amount: toAmount,
-        utxos: _utxos,
-        receiverToPayFee,
-        feeRate
+      let inputValue = 0;
+      let inputUtxos:UTXO[] = []
+      let fee;
+      const outputUtxos:{address: string; value:number}[] = [];
+      outputUtxos.push({
+        address: toAddressInfo.address,
+        value: toAmount,
       });
-      const psbt = Psbt.fromHex(psbtHex);
-      const rawtx = psbt.extractTransaction().toHex();
-      const fee = psbt.getFee();
+      let v= -1;
+      for (const utxo of regularsUTXOs) {
+        inputValue += utxo.value;
+        inputUtxos.push(utxo);
+        const remainder = inputValue - toAmount;
+        if (remainder >= 0) {
+         const newOutputs:{address: string; value:number}[] = [...outputUtxos];
+          if (remainder >= DUST_AMOUNT) {
+            newOutputs.push({
+              address: fromAddress,
+              value: remainder,
+            });
+          }
+          const retFee = calcFee({
+            inputs: inputUtxos,
+            outputs: newOutputs,
+            feeRate: feeRate,
+            addressType: getAddressType(fromAddress)!,
+            network: NetworkType.MAINNET,
+          });
+          v = remainder - retFee;
+          if (v >= 0) {
+            if (v >= DUST_AMOUNT) {
+              fee = retFee;
+            } else {
+              fee = retFee + v;
+            }
+            break;
+          }
+        }
+      }
+      console.log('v===', v)
+      if(v < 0) {
+        return {
+          psbtHex: '',
+          rawtx: '',
+          toAddressInfo,
+          fee,
+          err: 'Insufficient balance.'
+        }
+      } else if(v >= DUST_AMOUNT) {
+        outputUtxos.push({
+          address: fromAddress,
+          value: v,
+        })
+      }
+      const psbt = new Psbt({ network: bitcoin.networks.bitcoin });
+      for(const utxo of outputUtxos){
+        psbt.addOutput(utxo);
+      }
+      const { output } = detectAddressTypeToScripthash(fromAddress);
+      for (const utxo of inputUtxos) {
+        psbt.addInput(utxoToInput({
+          utxo,
+          pubkey: account.pubkey,
+          addressType: getAddressType(fromAddress)!,
+          script: output,
+        })!.data);
+      }
+      const psbtHex = psbt.toHex();
+      const s = await wallet.signPsbtReturnHex(psbtHex, { autoFinalized: true });
+      const signPsbt = Psbt.fromHex(s);
+      const tx = signPsbt.extractTransaction();
+      const rawtx = tx.toHex();
+      // const psbtHex = await wallet.sendBTC({
+      //   to: toAddressInfo.address,
+      //   amount: toAmount,
+      //   utxos: _utxos,
+      //   receiverToPayFee,
+      //   feeRate
+      // });
+      // const psbt = Psbt.fromHex(psbtHex);
+      // const rawtx = psbt.extractTransaction().toHex();
+      // const fee = psbt.getFee();
       dispatch(
         transactionsActions.updateBitcoinTx({
           rawtx,
           psbtHex,
           fromAddress,
-          feeRate
+          feeRate: fee
         })
       );
       const rawTxInfo: RawTxInfo = {
