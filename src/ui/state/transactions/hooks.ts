@@ -94,7 +94,6 @@ export function useCreateBitcoinTxCallback() {
           }
         }
       }
-      console.log('v===', v);
       if (v < 0) {
         return {
           psbtHex: '',

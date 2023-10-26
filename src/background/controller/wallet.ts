@@ -473,7 +473,6 @@ export class WalletController extends BaseController {
   signPsbt = async (psbt: bitcoin.Psbt, toSignInputs: ToSignInput[], autoFinalized: boolean) => {
     const account = await this.getCurrentAccount();
     if (!account) throw new Error('no current account');
-
     const keyring = await this.getCurrentKeyring();
     if (!keyring) throw new Error('no current keyring');
     const _keyring = keyringService.keyrings[keyring.index];
@@ -502,6 +501,7 @@ export class WalletController extends BaseController {
           v.tapInternalKey = tapInternalKey;
         }
       }
+
       if (keyring.addressType === AddressType.P2PKH) {
         //@ts-ignore
         psbt.__CACHE.__UNSAFE_SIGN_NONSEGWIT = true;
@@ -525,6 +525,8 @@ export class WalletController extends BaseController {
     const autoFinalized = options && options.autoFinalized == false ? false : true;
     const toSignInputs = await this.formatOptionsToSignInputs(psbtHex, options);
     const psbtObject = await this.signPsbt(psbt, toSignInputs, autoFinalized);
+    // @ts-ignore
+    psbtObject.__CACHE.__UNSAFE_SIGN_NONSEGWIT = false;
     return psbtObject.toHex();
   };
 
@@ -721,7 +723,7 @@ export class WalletController extends BaseController {
 
   setAtomicalEndPoint = (host: string) => {
     preferenceService.setAtomicalEndPoint(host);
-  }
+  };
 
   sendBTC = async ({
     to,
@@ -1307,17 +1309,16 @@ export class WalletController extends BaseController {
 
   validateAtomical = async (rawtx: string) => {
     return this.atomicalApi.electrumApi.validate(rawtx);
-  }
-
+  };
 
   getAtomicals = async (address: string): Promise<IWalletBalance> => {
     const host = this.getAtomicalEndPoint();
-    if(host) {
+    if (host) {
       this.changeAtomicalEndpoint(host);
     }
     const { scripthash, output } = detectAddressTypeToScripthash(address);
     const res = await this.atomicalApi.electrumApi.atomicalsByScripthash(scripthash, true);
-    console.log('res', res)
+    console.log('res', res);
     let cursor = 0;
     const size = 100;
     let hasMore = true;
