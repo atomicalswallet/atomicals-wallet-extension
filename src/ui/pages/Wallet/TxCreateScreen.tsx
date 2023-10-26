@@ -59,6 +59,7 @@ export default function TxCreateScreen() {
 
   const [feeRate, setFeeRate] = useState(5);
   const atomicals = useAtomicals();
+  const [testValue, settestValue] = useState('')
 
   const [rawTxInfo, setRawTxInfo] = useState<RawTxInfo>();
   useEffect(() => {
@@ -178,7 +179,6 @@ export default function TxCreateScreen() {
             preset="amount"
             placeholder={'Amount'}
             defaultValue={inputAmount}
-            value={inputAmount}
             onAmountInputChange={(amount) => {
               if (autoAdjust == true) {
                 setAutoAdjust(false);

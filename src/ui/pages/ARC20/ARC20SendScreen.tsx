@@ -264,11 +264,8 @@ function Step1({
               disableDecimal
               placeholder={'Amount'}
               defaultValue={inputAmount}
-              value={inputAmount}
+              // value={inputAmount}
               onAmountInputChange={async (value) => {
-                // if (autoAdjust == true) {
-                //   setAutoAdjust(false);
-                // }
                 setInputAmount(value);
               }}
             />
@@ -290,8 +287,7 @@ function Step1({
             />
           </Column>
         </Column>
-        {error && <Text text={error} color="error" />}
-        {error2 && <Text text={error2} color="error" />}
+        {(error || error2) && <Text text={error || error2} color="error" />}
         <Button text="Next" preset="primary" onClick={onClickNext} disabled={disabled} />
       </Column>
     </Content>
