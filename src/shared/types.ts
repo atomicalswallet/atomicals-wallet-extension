@@ -1,6 +1,7 @@
 import { CHAINS_ENUM } from './constant';
 import { UTXO as UTXOAtom } from '../background/service/interfaces/api';
 
+
 export enum LOCAL_KEY {
   ELECTRUMX_HTTP_PROXY = 'ELECTRUMX_HTTP_PROXY'
 }
@@ -148,6 +149,12 @@ export interface TransferFtConfigInterface {
   selectedUtxos: UTXOAtom[];
   type: 'FT' | 'NFT';
   outputs: Array<AmountToSend>;
+}
+
+export interface GasCalculateInterface {
+  selectedUtxos: UTXOAtom[];
+  regularsUTXOs?: UTXOAtom[];
+  outputs: { value: number; address?: string }[];
 }
 
 export interface UTXO_Detail {

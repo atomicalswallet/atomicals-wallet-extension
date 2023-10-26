@@ -1,7 +1,7 @@
 import BigNumber from 'bignumber.js';
 import { useEffect, useMemo, useState } from 'react';
 
-import { COIN_DUST } from '@/shared/constant';
+import { DUST_AMOUNT } from '@/shared/constant';
 import { Inscription, RawTxInfo } from '@/shared/types';
 import { Layout, Content, Button, Header, Icon, Text, Input, Column, Row } from '@/ui/components';
 import { FeeRateBar } from '@/ui/components/FeeRateBar';
@@ -55,7 +55,7 @@ export default function TxCreateScreen() {
     return amountToSatoshis(inputAmount);
   }, [inputAmount]);
 
-  const dustAmount = useMemo(() => satoshisToAmount(COIN_DUST), [COIN_DUST]);
+  const dustAmount = useMemo(() => satoshisToAmount(DUST_AMOUNT), [DUST_AMOUNT]);
 
   const [feeRate, setFeeRate] = useState(5);
   const atomicals = useAtomicals();
@@ -71,7 +71,7 @@ export default function TxCreateScreen() {
     if (!toSatoshis) {
       return;
     }
-    if (toSatoshis < COIN_DUST) {
+    if (toSatoshis < DUST_AMOUNT) {
       setError(`Amount must be at least ${dustAmount} BTC`);
       return;
     }

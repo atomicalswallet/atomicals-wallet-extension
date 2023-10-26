@@ -1,11 +1,12 @@
-import * as bitcoin from 'bitcoinjs-lib';
-import { isTaprootInput } from 'bitcoinjs-lib/src/psbt/bip371';
-import * as ecc from '@bitcoinerlab/secp256k1';
-import ECPairFactory, { ECPairInterface } from 'ecpair';
-import { UTXO } from '@/background/service/interfaces/utxo';
-import { detectAddressTypeToScripthash } from '@/background/service/utils';
 
+import * as bitcoin from 'bitcoinjs-lib';
+import * as ecc from '@bitcoinerlab/secp256k1';
+import { isTaprootInput } from 'bitcoinjs-lib/src/psbt/bip371';
+import ECPairFactory,{ ECPairInterface } from 'ecpair';
+import { NetworkType } from '@/shared/types';
+import { UTXO } from '@/background/service/interfaces/utxo';
 bitcoin.initEccLib(ecc);
+
 
 const ECPair = ECPairFactory(ecc);
 
@@ -82,18 +83,38 @@ export enum AddressType {
   P2SH_P2WPKH,
   M44_P2WPKH,
   M44_P2TR,
+  UNKNOWN,
+}
+
+export function toPsbtNetwork(networkType?: NetworkType) {
+  console.log('toPsbtNetwork', networkType, NetworkType.MAINNET)
+  if (networkType === NetworkType.TESTNET) {
+    return bitcoin.networks.testnet;
+  } else {
+    return bitcoin.networks.bitcoin;
+  }
 }
 
 
-export function getAddressType(address: string): AddressType | undefined {
-  if (address.startsWith('1')) {
-    return AddressType.P2PKH;
-  } else if (address.startsWith('bc1q')) {
+export function getAddressType(address: string): AddressType {
+  if (address.startsWith('bc1q')) {
     return AddressType.P2WPKH;
   } else if (address.startsWith('bc1p')) {
     return AddressType.P2TR;
+  } else if (address.startsWith('1')) {
+    return AddressType.P2PKH;
   } else if (address.startsWith('3')) {
     return AddressType.P2SH_P2WPKH;
+  } else if (address.startsWith('tb1q')) {
+    return AddressType.P2WPKH;
+  } else if (address.startsWith('m') || address.startsWith('n')) {
+    return AddressType.P2PKH;
+  } else if (address.startsWith('2')) {
+    return AddressType.P2SH_P2WPKH;
+  } else if (address.startsWith('tb1p')) {
+    return AddressType.P2TR;
+  } else {
+    return AddressType.UNKNOWN;
   }
 }
 
@@ -113,7 +134,7 @@ function tapTweakHash(pubKey: Buffer, h: Buffer | undefined): Buffer {
   );
 }
 
-function tweakSigner(signer: bitcoin.Signer, opts: any = {}): bitcoin.Signer {
+export function tweakSigner(signer: bitcoin.Signer, opts: any = {}): bitcoin.Signer {
   // eslint-disable-next-line @typescript-eslint/ban-ts-comment
   // @ts-ignore
   let privateKey: Uint8Array | undefined = signer.privateKey!;
@@ -137,18 +158,12 @@ function tweakSigner(signer: bitcoin.Signer, opts: any = {}): bitcoin.Signer {
   });
 }
 
-export enum NetworkType {
-  MAINNET,
-  TESTNET,
-}
+// export enum NetworkType {
+//   MAINNET,
+//   TESTNET,
+// }
 
-export function toPsbtNetwork(networkType: NetworkType) {
-  if (networkType === NetworkType.MAINNET) {
-    return bitcoin.networks.bitcoin;
-  } else {
-    return bitcoin.networks.testnet;
-  }
-}
+
 
 export function publicKeyToPayment(
   publicKey: string,
@@ -245,35 +260,6 @@ export interface TxInput {
   utxo: UTXO;
 }
 
-
-export function calcFee({ inputs, outputs, feeRate, addressType, network, autoFinalized }: CalcFeeOptions) {
-  network ??= NetworkType.MAINNET;
-  const wallet = new LocalWallet(internalWallet.WIF, network, addressType);
-  const psbt = new bitcoin.Psbt({ network: toPsbtNetwork(network) });
-  if (addressType === AddressType.P2PKH) {
-    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-    // @ts-ignore
-    psbt.__CACHE.__UNSAFE_SIGN_NONSEGWIT = true;
-  }
-  const { output } = detectAddressTypeToScripthash(wallet.address);
-  inputs.forEach((v) => {
-    psbt.addInput(utxoToInput({ utxo: v, addressType, pubkey: wallet.pubkey, script: output })!.data);
-  });
-  outputs.forEach((v) => {
-    psbt.addOutput(v);
-  });
-  const newPsbt = wallet.signPsbt(psbt, {
-    autoFinalized: autoFinalized == undefined ? true : autoFinalized,
-  });
-  let txSize = newPsbt.extractTransaction(true).toBuffer().length;
-  newPsbt.data.inputs.forEach((v) => {
-    if (v.finalScriptWitness) {
-      txSize -= v.finalScriptWitness.length * 0.75;
-    }
-  });
-  return Math.ceil(txSize * feeRate);
-}
-
 export const internalWallet = {
   'address': 'bc1p64lgtass0du6jfkaeslfmfs7t34lehwrya56xuu84zjtz37wnkdqgzl60f',
   'path': 'm/44\'/0\'/0\'/1/0',
@@ -291,7 +277,10 @@ export class LocalWallet {
     networkType: NetworkType = NetworkType.TESTNET,
     addressType: AddressType = AddressType.P2WPKH,
   ) {
+    console.log('toPsbtNetwork', networkType, NetworkType.MAINNET)
+    console.log('toPsbtNetwork', networkType)
     const network = toPsbtNetwork(networkType);
+    console.log('toPsbtNetwork',toPsbtNetwork)
     const keyPair = ECPair.fromWIF(wif, network);
     this.keyPair = keyPair;
     this.pubkey = keyPair.publicKey.toString('hex');

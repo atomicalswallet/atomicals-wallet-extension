@@ -1,7 +1,20 @@
 import { IAtomicalItem } from '@/background/service/interfaces/api';
+import { detectAddressTypeToScripthash } from '@/background/service/utils';
+import * as bitcoin from 'bitcoinjs-lib';
 import BigNumber from 'bignumber.js';
 import { toUnicode } from 'punycode';
 import { useLocation } from 'react-router-dom';
+import {
+  AddressType,
+  CalcFeeOptions,
+  LocalWallet,
+  getAddressType,
+  internalWallet,
+  toPsbtNetwork,
+  utxoToInput
+} from './local_wallet';
+import { GasCalculateInterface, NetworkType } from '@/shared/types';
+import { DUST_AMOUNT } from '@/shared/constant';
 
 export * from './hooks';
 export * from './WalletContext';
@@ -209,6 +222,102 @@ export const calculateFTFundsRequired = (
   };
 };
 
+export async function calculateGasV2(
+  fromAddress: string,
+  transferOptions: GasCalculateInterface,
+  satsbyte: number,
+  networkType?: NetworkType
+): Promise<number> {
+  const network = toPsbtNetwork(networkType);
+  const addressType = getAddressType(fromAddress);
+  const wallet = new LocalWallet(internalWallet.WIF, networkType ? networkType : NetworkType.MAINNET, addressType);
+  const psbt = new bitcoin.Psbt({ network });
+  const psbt2 = new bitcoin.Psbt({ network });
+  const { output: scriptOutput } = detectAddressTypeToScripthash(wallet.address);
+  let tokenInputsLength = 0;
+  let tokenOutputsLength = 0;
+  for (const utxo of transferOptions.selectedUtxos) {
+    // Add the atomical input, the value from the input counts towards the total satoshi amount required
+    psbt.addInput(utxoToInput({ utxo, script: scriptOutput, pubkey: wallet.pubkey, addressType })!.data);
+    psbt2.addInput(utxoToInput({ utxo, script: scriptOutput, pubkey: wallet.pubkey, addressType })!.data);
+    tokenInputsLength += 1;
+  }
+
+  for (const output of transferOptions.outputs) {
+    // Add the atomical input, the value from the input counts towards the total satoshi amount required
+    if (output.value !== undefined) {
+      psbt.addOutput({
+        value: output.value,
+        address: fromAddress
+      });
+      psbt2.addOutput({
+        value: output.value,
+        address: fromAddress
+      });
+      tokenOutputsLength += 1;
+    }
+  }
+
+  if (tokenInputsLength > 0 && tokenOutputsLength > 0) {
+    let fee = await calculateNetworkFeeV2(psbt, wallet, satsbyte, addressType);
+    if (fee <= DUST_AMOUNT) {
+      return DUST_AMOUNT;
+    } else {
+      let addedValue = 0;
+      // psbt.data.inputs.forEach((v, i) => {
+      //   if (v.finalScriptSig || v.finalScriptWitness) {
+      //     psbt.clearFinalizedInput(i);
+      //   }
+      // });
+      if (transferOptions.regularsUTXOs && transferOptions.regularsUTXOs!.length > 0) {
+        const _regulars = transferOptions.regularsUTXOs;
+        for (let i = 0; i <= transferOptions.regularsUTXOs.length; i += 1) {
+          const utxo = _regulars[i];
+          if (addedValue >= fee) {
+            break;
+          } else {
+            addedValue += utxo.value;
+            const { output } = detectAddressTypeToScripthash(wallet.address);
+            psbt2.addInput(utxoToInput({ utxo, addressType, pubkey: wallet.pubkey, script: output })!.data);
+            // psbt.setInputSequence(utxo.vout, 0xfffffffd);
+          }
+        }
+        if (addedValue - fee >= 546) {
+          psbt2.addOutput({
+            value: addedValue - fee,
+            address: fromAddress
+          });
+        }
+        fee = await calculateNetworkFeeV2(psbt2, wallet, satsbyte, addressType);
+      }
+      return fee;
+    }
+  }
+  return 0;
+}
+
+export async function calculateNetworkFeeV2(
+  psbt: bitcoin.Psbt,
+  wallet: LocalWallet,
+  feeRate: number,
+  addressType: AddressType
+): Promise<number> {
+  if (addressType === AddressType.P2PKH) {
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    // @ts-ignore
+    psbt.__CACHE.__UNSAFE_SIGN_NONSEGWIT = true;
+  }
+
+  const _psbt = wallet.signPsbt(psbt);
+  let txSize = _psbt.extractTransaction(true).toBuffer().length;
+  _psbt.data.inputs.forEach((v) => {
+    if (v.finalScriptWitness) {
+      txSize -= v.finalScriptWitness.length * 0.75;
+    }
+  });
+  return Math.ceil(txSize * feeRate);
+}
+
 export function flattenObject(ob: any = {}) {
   const toReturn: { [key: string]: any } = {};
 
@@ -253,19 +362,17 @@ export function tryDecodePunycode(name: string) {
 export function returnImageType(item: IAtomicalItem): { type: string; content: string; tag: string; buffer?: Buffer } {
   let ct, content, type, tag, buffer;
   const text =
-    item.$realm ||
     item.$request_realm ||
     item.$request_container ||
     item.$request_subrealm ||
+    item.$realm ||
     item.mint_data?.fields?.args?.request_realm ||
     item.mint_data?.fields?.args?.request_subrealm ||
     item.mint_data?.fields?.args?.request_container;
   if (text) {
     type = 'realm';
     tag = 'Realm';
-    content = item.$full_realm_name!.toLowerCase().startsWith('xn--')
-      ? toUnicode(item.$full_realm_name!)
-      : item.$full_realm_name;
+    const content = tryDecodePunycode(text);
     return { type, content, tag, buffer };
   } else {
     if (findValueInDeepObject(item.mint_data?.fields, '$d') && findValueInDeepObject(item.mint_data?.fields, '$ct')) {
@@ -295,4 +402,32 @@ export function returnImageType(item: IAtomicalItem): { type: string; content: s
     }
   }
   return { type, content, tag, buffer };
+}
+
+export function calcFee({ inputs, outputs, feeRate, addressType, network, autoFinalized }: CalcFeeOptions) {
+  network ??= NetworkType.MAINNET;
+  const wallet = new LocalWallet(internalWallet.WIF, network, addressType);
+  const psbt = new bitcoin.Psbt({ network: toPsbtNetwork(network) });
+  if (addressType === AddressType.P2PKH) {
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    // @ts-ignore
+    psbt.__CACHE.__UNSAFE_SIGN_NONSEGWIT = true;
+  }
+  const { output } = detectAddressTypeToScripthash(wallet.address);
+  inputs.forEach((v) => {
+    psbt.addInput(utxoToInput({ utxo: v, addressType, pubkey: wallet.pubkey, script: output })!.data);
+  });
+  outputs.forEach((v) => {
+    psbt.addOutput(v);
+  });
+  const newPsbt = wallet.signPsbt(psbt, {
+    autoFinalized: autoFinalized == undefined ? true : autoFinalized
+  });
+  let txSize = newPsbt.extractTransaction(true).toBuffer().length;
+  newPsbt.data.inputs.forEach((v) => {
+    if (v.finalScriptWitness) {
+      txSize -= v.finalScriptWitness.length * 0.75;
+    }
+  });
+  return Math.ceil(txSize * feeRate);
 }

@@ -1312,6 +1312,7 @@ export class WalletController extends BaseController {
     }
     const { scripthash, output } = detectAddressTypeToScripthash(address);
     const res = await this.atomicalApi.electrumApi.atomicalsByScripthash(scripthash, true);
+    console.log('res', res)
     let cursor = 0;
     const size = 100;
     let hasMore = true;
