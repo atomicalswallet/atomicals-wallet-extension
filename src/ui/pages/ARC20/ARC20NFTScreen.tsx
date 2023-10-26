@@ -112,7 +112,7 @@ function Preview(props: { selectValues: string[]; updateStep: (step: Step) => vo
       selectedUtxos: atomicalsWithLocation.map(o => o.location),
       outputs: outputs ?? []
     };
-    const rawTxInfo = await createARC20NFTTx(obj, toInfo, atomicals.regularsUTXOs, feeRate);
+    const rawTxInfo = await createARC20NFTTx(obj, toInfo, feeRate);
     if (rawTxInfo && rawTxInfo.err) {
       return setError(rawTxInfo.err);
     }

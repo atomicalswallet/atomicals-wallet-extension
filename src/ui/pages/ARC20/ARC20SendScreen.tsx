@@ -221,7 +221,7 @@ function Step1({
       type: contextData?.tokenBalance?.type,
       outputs: outputs ?? [],
     };
-    const rawTxInfo = await createARC20Tx(obj, toInfo, atomicals.regularsUTXOs, feeRate);
+    const rawTxInfo = await createARC20Tx(obj, toInfo, feeRate);
     if(rawTxInfo && rawTxInfo.err) {
       return setError(rawTxInfo.err);
     }

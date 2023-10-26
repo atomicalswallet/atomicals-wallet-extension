@@ -72,6 +72,8 @@ export function utxoToInput({ utxo, script, addressType, pubkey }: {
       data,
       utxo,
     };
+  } else {
+    throw new Error('unsupported address type');
   }
 }
 
