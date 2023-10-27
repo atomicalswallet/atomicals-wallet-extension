@@ -1,4 +1,3 @@
-import BigNumber from 'bignumber.js';
 import { useEffect, useMemo, useState } from 'react';
 
 import { DUST_AMOUNT } from '@/shared/constant';
@@ -103,17 +102,20 @@ export default function TxCreateScreen() {
         //   setError(`Network fee must be at leat ${data.estimateFee}`);
         //   return;
         // }
+        console.log('then', data);
         setRawTxInfo(data);
         setDisabled(false);
       })
       .catch((e) => {
-        console.log(e);
+        console.log('catch', e);
+        setAutoAdjust(false)
         setError(e.message);
       });
   }, [toInfo, inputAmount, autoAdjust, feeRate]);
 
   const showSafeBalance = useMemo(() => {
-    return new BigNumber(accountBalance.amount).eq(new BigNumber(safeBalance)) == false;
+    return true;
+    // return new BigNumber(accountBalance.amount).eq(new BigNumber(safeBalance)) == false;
   }, [accountBalance.amount, safeBalance]);
 
   return (
@@ -149,8 +151,8 @@ export default function TxCreateScreen() {
             ) : (
               <Row
                 onClick={() => {
+                  setInputAmount(accountBalance.btc_amount.toString());
                   setAutoAdjust(true);
-                  setInputAmount(accountBalance.amount);
                 }}>
                 <Text
                   text="MAX"
@@ -167,8 +169,8 @@ export default function TxCreateScreen() {
 
               <Row
                 onClick={() => {
-                  setAutoAdjust(true);
                   setInputAmount(accountBalance.btc_amount.toString());
+                  setAutoAdjust(true);
                 }}>
                 <Text text={'MAX'} color={autoAdjust ? 'yellow' : 'textDim'} size="sm" />
                 <Text text={`${accountBalance.btc_amount} BTC`} preset="bold" size="sm" />
@@ -179,6 +181,7 @@ export default function TxCreateScreen() {
             preset="amount"
             placeholder={'Amount'}
             defaultValue={inputAmount}
+            // value={inputAmount}
             onAmountInputChange={(amount) => {
               if (autoAdjust == true) {
                 setAutoAdjust(false);

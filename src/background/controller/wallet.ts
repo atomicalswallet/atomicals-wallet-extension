@@ -35,14 +35,13 @@ import {
   BitcoinBalance,
   NetworkType,
   ToSignInput,
-  UTXO,
   WalletKeyring,
   Account,
   SignPsbtOptions,
   AddressUserToSignInput,
   PublicKeyUserToSignInput
 } from '@/shared/types';
-import { createSendBTC, createSendMultiOrds, createSendOrd, createSplitOrdUtxoV2 } from '@unisat/ord-utils';
+import { createSplitOrdUtxoV2 } from '@unisat/ord-utils';
 
 import { ContactBookItem } from '../service/contactBook';
 import { OpenApiService } from '../service/openapi';
@@ -725,165 +724,165 @@ export class WalletController extends BaseController {
     preferenceService.setAtomicalEndPoint(host);
   };
 
-  sendBTC = async ({
-    to,
-    amount,
-    utxos,
-    receiverToPayFee,
-    feeRate
-  }: {
-    to: string;
-    amount: number;
-    utxos: UTXO[];
-    receiverToPayFee: boolean;
-    feeRate: number;
-  }) => {
-    const account = preferenceService.getCurrentAccount();
-    if (!account) throw new Error('no current account');
+  // sendBTC = async ({
+  //   to,
+  //   amount,
+  //   utxos,
+  //   receiverToPayFee,
+  //   feeRate
+  // }: {
+  //   to: string;
+  //   amount: number;
+  //   utxos: UTXO[];
+  //   receiverToPayFee: boolean;
+  //   feeRate: number;
+  // }) => {
+  //   const account = preferenceService.getCurrentAccount();
+  //   if (!account) throw new Error('no current account');
 
-    const networkType = this.getNetworkType();
-    const psbtNetwork = toPsbtNetwork(networkType);
+  //   const networkType = this.getNetworkType();
+  //   const psbtNetwork = toPsbtNetwork(networkType);
 
-    const psbt = await createSendBTC({
-      utxos: utxos.map((v) => {
-        return {
-          txId: v.txId,
-          outputIndex: v.outputIndex,
-          satoshis: v.satoshis,
-          scriptPk: v.scriptPk,
-          addressType: v.addressType,
-          address: account.address,
-          ords: v.inscriptions
-        };
-      }),
-      toAddress: to,
-      toAmount: amount,
-      wallet: this,
-      network: psbtNetwork,
-      changeAddress: account.address,
-      receiverToPayFee,
-      pubkey: account.pubkey,
-      feeRate,
-      enableRBF: false
-    });
+  //   const psbt = await createSendBTC({
+  //     utxos: utxos.map((v) => {
+  //       return {
+  //         txId: v.txId,
+  //         outputIndex: v.outputIndex,
+  //         satoshis: v.satoshis,
+  //         scriptPk: v.scriptPk,
+  //         addressType: v.addressType,
+  //         address: account.address,
+  //         ords: v.inscriptions
+  //       };
+  //     }),
+  //     toAddress: to,
+  //     toAmount: amount,
+  //     wallet: this,
+  //     network: psbtNetwork,
+  //     changeAddress: account.address,
+  //     receiverToPayFee,
+  //     pubkey: account.pubkey,
+  //     feeRate,
+  //     enableRBF: false
+  //   });
 
-    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-    //@ts-ignore
-    psbt.__CACHE.__UNSAFE_SIGN_NONSEGWIT = false;
-    return psbt.toHex();
-  };
+  //   // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+  //   //@ts-ignore
+  //   psbt.__CACHE.__UNSAFE_SIGN_NONSEGWIT = false;
+  //   return psbt.toHex();
+  // };
 
-  sendInscription = async ({
-    to,
-    inscriptionId,
-    feeRate,
-    outputValue
-  }: {
-    to: string;
-    inscriptionId: string;
-    feeRate: number;
-    outputValue: number;
-  }) => {
-    const account = await preferenceService.getCurrentAccount();
-    if (!account) throw new Error('no current account');
+  // sendInscription = async ({
+  //   to,
+  //   inscriptionId,
+  //   feeRate,
+  //   outputValue
+  // }: {
+  //   to: string;
+  //   inscriptionId: string;
+  //   feeRate: number;
+  //   outputValue: number;
+  // }) => {
+  //   const account = await preferenceService.getCurrentAccount();
+  //   if (!account) throw new Error('no current account');
 
-    const networkType = preferenceService.getNetworkType();
-    const psbtNetwork = toPsbtNetwork(networkType);
+  //   const networkType = preferenceService.getNetworkType();
+  //   const psbtNetwork = toPsbtNetwork(networkType);
 
-    const utxo = await openapiService.getInscriptionUtxo(inscriptionId);
-    if (!utxo) {
-      throw new Error('UTXO not found.');
-    }
+  //   const utxo = await openapiService.getInscriptionUtxo(inscriptionId);
+  //   if (!utxo) {
+  //     throw new Error('UTXO not found.');
+  //   }
 
-    if (utxo.inscriptions.length > 1) {
-      throw new Error('Multiple inscriptions are mixed together. Please split them first.');
-    }
+  //   if (utxo.inscriptions.length > 1) {
+  //     throw new Error('Multiple inscriptions are mixed together. Please split them first.');
+  //   }
 
-    const btc_utxos = await openapiService.getAddressUtxo(account.address);
-    const utxos = [utxo].concat(btc_utxos);
+  //   const btc_utxos = await openapiService.getAddressUtxo(account.address);
+  //   const utxos = [utxo].concat(btc_utxos);
 
-    const psbt = await createSendOrd({
-      utxos: utxos.map((v) => {
-        return {
-          txId: v.txId,
-          outputIndex: v.outputIndex,
-          satoshis: v.satoshis,
-          scriptPk: v.scriptPk,
-          addressType: v.addressType,
-          address: account.address,
-          ords: v.inscriptions
-        };
-      }),
-      toAddress: to,
-      toOrdId: inscriptionId,
-      wallet: this,
-      network: psbtNetwork,
-      changeAddress: account.address,
-      pubkey: account.pubkey,
-      feeRate,
-      outputValue,
-      enableRBF: false
-    });
-    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-    //@ts-ignore
-    psbt.__CACHE.__UNSAFE_SIGN_NONSEGWIT = false;
-    return psbt.toHex();
-  };
+  //   const psbt = await createSendOrd({
+  //     utxos: utxos.map((v) => {
+  //       return {
+  //         txId: v.txId,
+  //         outputIndex: v.outputIndex,
+  //         satoshis: v.satoshis,
+  //         scriptPk: v.scriptPk,
+  //         addressType: v.addressType,
+  //         address: account.address,
+  //         ords: v.inscriptions
+  //       };
+  //     }),
+  //     toAddress: to,
+  //     toOrdId: inscriptionId,
+  //     wallet: this,
+  //     network: psbtNetwork,
+  //     changeAddress: account.address,
+  //     pubkey: account.pubkey,
+  //     feeRate,
+  //     outputValue,
+  //     enableRBF: false
+  //   });
+  //   // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+  //   //@ts-ignore
+  //   psbt.__CACHE.__UNSAFE_SIGN_NONSEGWIT = false;
+  //   return psbt.toHex();
+  // };
 
-  sendInscriptions = async ({
-    to,
-    inscriptionIds,
-    feeRate
-  }: {
-    to: string;
-    inscriptionIds: string[];
-    utxos: UTXO[];
-    feeRate: number;
-  }) => {
-    const account = await preferenceService.getCurrentAccount();
-    if (!account) throw new Error('no current account');
+  // sendInscriptions = async ({
+  //   to,
+  //   inscriptionIds,
+  //   feeRate
+  // }: {
+  //   to: string;
+  //   inscriptionIds: string[];
+  //   utxos: UTXO[];
+  //   feeRate: number;
+  // }) => {
+  //   const account = await preferenceService.getCurrentAccount();
+  //   if (!account) throw new Error('no current account');
 
-    const networkType = preferenceService.getNetworkType();
-    const psbtNetwork = toPsbtNetwork(networkType);
+  //   const networkType = preferenceService.getNetworkType();
+  //   const psbtNetwork = toPsbtNetwork(networkType);
 
-    const inscription_utxos = await openapiService.getInscriptionUtxos(inscriptionIds);
-    if (!inscription_utxos) {
-      throw new Error('UTXO not found.');
-    }
+  //   const inscription_utxos = await openapiService.getInscriptionUtxos(inscriptionIds);
+  //   if (!inscription_utxos) {
+  //     throw new Error('UTXO not found.');
+  //   }
 
-    if (inscription_utxos.find((v) => v.inscriptions.length > 1)) {
-      throw new Error('Multiple inscriptions are mixed together. Please split them first.');
-    }
+  //   if (inscription_utxos.find((v) => v.inscriptions.length > 1)) {
+  //     throw new Error('Multiple inscriptions are mixed together. Please split them first.');
+  //   }
 
-    const btc_utxos = await openapiService.getAddressUtxo(account.address);
-    const utxos = inscription_utxos.concat(btc_utxos);
+  //   const btc_utxos = await openapiService.getAddressUtxo(account.address);
+  //   const utxos = inscription_utxos.concat(btc_utxos);
 
-    const psbt = await createSendMultiOrds({
-      utxos: utxos.map((v) => {
-        return {
-          txId: v.txId,
-          outputIndex: v.outputIndex,
-          satoshis: v.satoshis,
-          scriptPk: v.scriptPk,
-          addressType: v.addressType,
-          address: account.address,
-          ords: v.inscriptions
-        };
-      }),
-      toAddress: to,
-      toOrdIds: inscriptionIds,
-      wallet: this,
-      network: psbtNetwork,
-      changeAddress: account.address,
-      pubkey: account.pubkey,
-      feeRate,
-      enableRBF: false
-    });
-    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-    //@ts-ignore
-    psbt.__CACHE.__UNSAFE_SIGN_NONSEGWIT = false;
-    return psbt.toHex();
-  };
+  //   const psbt = await createSendMultiOrds({
+  //     utxos: utxos.map((v) => {
+  //       return {
+  //         txId: v.txId,
+  //         outputIndex: v.outputIndex,
+  //         satoshis: v.satoshis,
+  //         scriptPk: v.scriptPk,
+  //         addressType: v.addressType,
+  //         address: account.address,
+  //         ords: v.inscriptions
+  //       };
+  //     }),
+  //     toAddress: to,
+  //     toOrdIds: inscriptionIds,
+  //     wallet: this,
+  //     network: psbtNetwork,
+  //     changeAddress: account.address,
+  //     pubkey: account.pubkey,
+  //     feeRate,
+  //     enableRBF: false
+  //   });
+  //   // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+  //   //@ts-ignore
+  //   psbt.__CACHE.__UNSAFE_SIGN_NONSEGWIT = false;
+  //   return psbt.toHex();
+  // };
 
   splitInscription = async ({
     inscriptionId,

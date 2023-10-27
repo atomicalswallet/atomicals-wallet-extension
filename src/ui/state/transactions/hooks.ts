@@ -40,6 +40,11 @@ export function useCreateBitcoinTxCallback() {
       if (safeBalance < toAmount) {
         throw new Error('Insufficient balance ');
       }
+      const autoAdjust = receiverToPayFee || (toAmount === safeBalance);
+      if (autoAdjust) {
+        toAmount = safeBalance;
+      }
+
       try {
         detectAddressTypeToScripthash(toAddressInfo.address);
       } catch (e) {
@@ -83,6 +88,9 @@ export function useCreateBitcoinTxCallback() {
             addressType: getAddressType(fromAddress)!,
             network: NetworkType.MAINNET
           });
+          if(autoAdjust) {
+            fee = retFee;
+          }
           v = remainder - retFee;
           if (v >= 0) {
             if (v >= DUST_AMOUNT) {
@@ -94,23 +102,30 @@ export function useCreateBitcoinTxCallback() {
           }
         }
       }
-      if (v < 0) {
-        return {
-          psbtHex: '',
-          rawtx: '',
-          toAddressInfo,
-          fee,
-          err: 'Insufficient balance.'
-        };
-      } else if (v >= DUST_AMOUNT) {
-        outputUtxos.push({
-          address: fromAddress,
-          value: v
-        });
-      }
       const psbt = new Psbt({ network: bitcoin.networks.bitcoin });
-      for (const utxo of outputUtxos) {
-        psbt.addOutput(utxo);
+      if(autoAdjust) {
+        psbt.addOutput({
+          address: toAddressInfo.address,
+          value: toAmount - fee
+        });
+      } else {
+        if (v < 0) {
+          return {
+            psbtHex: '',
+            rawtx: '',
+            toAddressInfo,
+            fee,
+            err: 'Insufficient balance.'
+          };
+        } else if (v >= DUST_AMOUNT) {
+          outputUtxos.push({
+            address: fromAddress,
+            value: v
+          });
+        }
+        for (const utxo of outputUtxos) {
+          psbt.addOutput(utxo);
+        }
       }
       const { output } = detectAddressTypeToScripthash(fromAddress);
       for (const utxo of inputUtxos) {
