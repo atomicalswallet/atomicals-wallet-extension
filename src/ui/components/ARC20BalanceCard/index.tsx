@@ -28,7 +28,7 @@ export default function ARC20BalanceCard(props: ARC20BalanceCardProps) {
         backgroundColor: '#141414',
         borderColor: 'rgba(255,255,255,0.1)',
         borderWidth: 1,
-        width: 150,
+        // width: 150,
         height: 120,
         minWidth: 150,
         minHeight: 120

@@ -33,9 +33,11 @@ function Preview(props: { selectValues: string[]; updateStep: (step: Step) => vo
   const atomicals = useAtomicals();
   const accountBalance = useAccountBalance();
   const [feeRate, setFeeRate] = useState(5);
-  const [atomicalsWithLocation, setAtomicalsWithLocation] = useState<(IAtomicalItem & {
-    location: UTXO,
-  })[]>([]);
+  const [atomicalsWithLocation, setAtomicalsWithLocation] = useState<
+    (IAtomicalItem & {
+      location: UTXO;
+    })[]
+  >([]);
   const [toInfo, setToInfo] = useState<{
     address: string;
     domain: string;
@@ -44,7 +46,7 @@ function Preview(props: { selectValues: string[]; updateStep: (step: Step) => vo
     domain: bitcoinTx.toDomain
   });
   const navigate = useNavigate();
-  const [loading, setLoading] = useState(false)
+  const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [disabled, setDisabled] = useState(true);
   const createARC20NFTTx = useCreateARCNFTTxCallback();
@@ -59,11 +61,9 @@ function Preview(props: { selectValues: string[]; updateStep: (step: Step) => vo
   const loadAtomicalsWithLocation = useCallback(async () => {
     if (wallet && toInfo.address && selectValues) {
       try {
-        setLoading(true)
-        const api = ElectrumApi.createClient(ELECTRUMX_HTTP_PROXY)
-        const list = await Promise.all(
-          selectValues.map((atomical_id) => api.atomicalsGetLocation(atomical_id))
-        );
+        setLoading(true);
+        const api = ElectrumApi.createClient(ELECTRUMX_HTTP_PROXY);
+        const list = await Promise.all(selectValues.map((atomical_id) => api.atomicalsGetLocation(atomical_id)));
         const atomicalsWithLocation = selectAtomcalsNFTs.map((e, i) => {
           const location = list[i].result.location_info_obj.locations[0];
           return {
@@ -73,7 +73,7 @@ function Preview(props: { selectValues: string[]; updateStep: (step: Step) => vo
         });
         setAtomicalsWithLocation(atomicalsWithLocation);
       } finally {
-        setLoading(false)
+        setLoading(false);
       }
     }
   }, [wallet, toInfo, selectValues]);
@@ -85,13 +85,12 @@ function Preview(props: { selectValues: string[]; updateStep: (step: Step) => vo
     if (!isValidAddress(toInfo.address)) {
       return;
     }
-    if(wallet) {
+    if (wallet) {
       loadAtomicalsWithLocation();
     }
 
     setDisabled(false);
   }, [toInfo, wallet, feeRate, loadAtomicalsWithLocation]);
-
 
   const outputs = useMemo(() => {
     const outputs = atomicalsWithLocation.map((item) => ({
@@ -107,9 +106,9 @@ function Preview(props: { selectValues: string[]; updateStep: (step: Step) => vo
   });
 
   const onClickNext = async () => {
-    if(atomicalsWithLocation.length === 0) return;
+    if (atomicalsWithLocation.length === 0) return;
     const obj = {
-      selectedUtxos: atomicalsWithLocation.map(o => o.location),
+      selectedUtxos: atomicalsWithLocation.map((o) => o.location),
       outputs: outputs ?? []
     };
     const rawTxInfo = await createARC20NFTTx(obj, toInfo, feeRate);
@@ -204,7 +203,12 @@ function Preview(props: { selectValues: string[]; updateStep: (step: Step) => vo
           </Column>
           <Column>
             {error && <Text text={error} color="error" />}
-            <Button text={loading ? '': 'Next'} preset="primary" onClick={onClickNext} disabled={disabled || loading} />
+            <Button
+              text={loading ? '' : 'Next'}
+              preset="primary"
+              onClick={onClickNext}
+              disabled={disabled || loading}
+            />
           </Column>
         </Column>
       </Content>
@@ -251,14 +255,14 @@ const ARC20NFTScreen = () => {
   const [checkedList, setCheckedList] = useState<string[]>([]);
 
   const onChange = (checkedValues: any) => {
-    if(checkedValues) {
+    if (checkedValues) {
       let find = false;
       checkedValues.forEach((v: string) => {
-        if(atomicals.unconfirmedUTXOs.find(o => o.atomicals?.includes(v) )) {
+        if (atomicals.unconfirmedUTXOs.find((o) => o.atomicals?.includes(v))) {
           find = true;
         }
-      })
-      if(find) {
+      });
+      if (find) {
         return tools.toastError('The NFT is unconfirmed.');
       }
     }
@@ -284,9 +288,16 @@ const ARC20NFTScreen = () => {
               <Text text="Select NFT to send" preset="regular" color="textDim" />
               <Row style={{ flexWrap: 'wrap', maxHeight: 'calc(100vh - 170px)', overflow: 'auto' }} gap="sm" full>
                 <Checkbox.Group onChange={onChange} value={checkedList}>
-                  {atomicals.atomicalNFTs.map((data, index) => {
-                    return <ARC20NFTCard key={index} checkbox selectvalues={checkedList} tokenBalance={data} />;
-                  })}
+                  <Grid
+                    gap="sm"
+                    style={{
+                      gridTemplateColumns: 'repeat(auto-fill,minmax(150px,1fr))',
+                      width: '100%'
+                    }}>
+                    {atomicals.atomicalNFTs.map((data, index) => {
+                      return <ARC20NFTCard key={index} checkbox selectvalues={checkedList} tokenBalance={data} />;
+                    })}
+                  </Grid>
                 </Checkbox.Group>
               </Row>
             </Column>

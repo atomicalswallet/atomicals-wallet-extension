@@ -27,8 +27,13 @@ export default function ARC20NFTCard(props: ARC20NFTCardProps) {
   const { type, content, tag, buffer } = returnImageType(props.tokenBalance);
 
   const Content = () => {
+    if (tag.includes('stream') || !buffer) return null;
     if (tag.startsWith('image/')) {
-      return <img className="object-contain w-full h-full" style={{ imageRendering: 'pixelated' }} src={content} />;
+      return <img src={content}
+        style={{
+          height: 24,
+          maxWidth: 140,
+        }} />;
     } else if (tag.startsWith('video/')) {
       return (
         <video
@@ -37,7 +42,10 @@ export default function ARC20NFTCard(props: ARC20NFTCardProps) {
           loop={true}
           muted={true}
           controls={true}
-          className="object-cover w-full h-full"
+          style={{
+            objectFit: 'cover'
+          }}
+          className="object-cover"
         />
       );
     } else if (tag.startsWith('audio/')) {
@@ -82,7 +90,7 @@ export default function ARC20NFTCard(props: ARC20NFTCardProps) {
         backgroundColor: '#141414',
         borderColor: 'rgba(255,255,255,0.1)',
         borderWidth: 1,
-        width: 150,
+        // width: 150,
         height: 120,
         minWidth: 150,
         minHeight: 120
@@ -99,7 +107,13 @@ export default function ARC20NFTCard(props: ARC20NFTCardProps) {
             {type === 'unknown' ? (
               <Text text={'unknown'} />
             ) : type === 'nft' ? (
-              <Tag preset="default" text={tag} />
+                <Tag preset="default" text={tag} style={{
+                  whiteSpace: 'nowrap',
+                  overflow: 'hidden',
+                  maxWidth: 120,
+                  display: 'inline-block',
+                  textOverflow: 'ellipsis'
+                }}/>
             ) : (
               <Tag preset="success" text={'Realm'} />
             )}
@@ -108,7 +122,13 @@ export default function ARC20NFTCard(props: ARC20NFTCardProps) {
             {type === 'unknown' ? (
               <Text text={'unknown'} />
             ) : type === 'nft' ? (
-              <Content />
+              <div
+                style={{
+                  maxWidth: 140,
+                  height: 24
+                }}>
+                <Content />
+              </div>
             ) : (
               <Text text={content} color="textDim" size="xl" />
             )}

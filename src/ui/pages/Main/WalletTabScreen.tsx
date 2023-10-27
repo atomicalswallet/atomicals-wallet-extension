@@ -498,6 +498,7 @@ function ARC20List({ tabKey }: { tabKey: WalletTabScreenTabKey }) {
                   </Row>
                   <Grid gap="sm" style={{
                     gridTemplateColumns: 'repeat(auto-fill,minmax(150px,1fr))',
+                    width: '100%'
                   }}>
                     <AtomicalView disabled items={utxo.atomicals} />
                   </Grid>
@@ -506,9 +507,19 @@ function ARC20List({ tabKey }: { tabKey: WalletTabScreenTabKey }) {
             })}
           </>
         ) : tabKey === WalletTabScreenTabKey.FT ? (
-          <AtomicalView items={atomicals.atomicalFTs} />
+          <Grid gap="sm" style={{
+            gridTemplateColumns: 'repeat(auto-fill,minmax(150px,1fr))',
+            width: '100%',
+          }}>
+            <AtomicalView items={atomicals.atomicalFTs} />
+          </Grid>
         ) : (
-          <AtomicalView items={atomicals.atomicalNFTs} />
+          <Grid gap="sm" style={{
+            gridTemplateColumns: 'repeat(auto-fill,minmax(150px,1fr))',
+            width: '100%',
+          }}>
+            <AtomicalView items={atomicals.atomicalNFTs} />
+          </Grid>
         )}
       </Row>
 
