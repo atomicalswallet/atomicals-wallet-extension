@@ -41,7 +41,7 @@ function Step1({
 
   const btnClick = async () => {
     try {
-      const _res = await wallet.createTmpKeyringWithPrivateKey(wif, AddressType.P2TR);
+      const _res = await wallet.createTmpKeyringWithPrivateKey(wif, AddressType.M44_P2TR);
       if (_res.accounts.length == 0) {
         throw new Error('Invalid PrivateKey');
       }
