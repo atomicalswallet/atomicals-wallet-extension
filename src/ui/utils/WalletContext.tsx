@@ -212,7 +212,7 @@ export interface WalletController {
 
   setAtomicalEndPoint: (host: string) => void;
 
-  getAtomicals(address: string, network: string): Promise<IWalletBalance>;
+  getAtomicals(address: string, network: NetworkType): Promise<IWalletBalance>;
 
   expireUICachedData(address: string): Promise<void>;
 

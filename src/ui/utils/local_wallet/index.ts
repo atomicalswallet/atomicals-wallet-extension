@@ -5,6 +5,7 @@ import { isTaprootInput } from 'bitcoinjs-lib/src/psbt/bip371';
 import ECPairFactory,{ ECPairInterface } from 'ecpair';
 import { NetworkType } from '@/shared/types';
 import { UTXO } from '@/background/service/interfaces/utxo';
+import { toPsbtNetwork } from '@/background/utils/tx-utils';
 bitcoin.initEccLib(ecc);
 
 
@@ -88,14 +89,7 @@ export enum AddressType {
   UNKNOWN,
 }
 
-export function toPsbtNetwork(networkType?: NetworkType) {
-  console.log('toPsbtNetwork', networkType, NetworkType.MAINNET)
-  if (networkType === NetworkType.TESTNET) {
-    return bitcoin.networks.testnet;
-  } else {
-    return bitcoin.networks.bitcoin;
-  }
-}
+
 
 
 export function getAddressType(address: string): AddressType {

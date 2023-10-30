@@ -7,7 +7,7 @@ import { AppState } from '..';
 import { useAppDispatch, useAppSelector } from '../hooks';
 import { useCurrentKeyring } from '../keyrings/hooks';
 import { accountActions } from './reducer';
-import { useAtomNetworkType } from '../settings/hooks';
+import { useNetworkType } from '../settings/hooks';
 
 export function useAccountsState(): AppState['accounts'] {
   return useAppSelector((state) => state.accounts);
@@ -191,7 +191,7 @@ export function useAtomicalsCallback() {
   const wallet = useWallet();
   const currentAccount = useCurrentAccount();
   const balance = useAccountBalance();
-  const networkType = useAtomNetworkType();
+  const networkType = useNetworkType();
 
   return useCallback(async () => {
     if (!currentAccount.address) return;

@@ -14,6 +14,8 @@ import { detectAddressTypeToScripthash } from '@/background/service/utils';
 import { UTXO } from '@/background/service/interfaces/utxo';
 import { DUST_AMOUNT } from '@/shared/constant';
 import { getAddressType, utxoToInput } from '@/ui/utils/local_wallet';
+import { useNetworkType } from '../settings/hooks';
+import { toPsbtNetwork } from '@/background/utils/tx-utils';
 
 export function useTransactionsState(): AppState['transactions'] {
   return useAppSelector((state) => state.transactions);
@@ -32,6 +34,7 @@ export function useCreateBitcoinTxCallback() {
   // const utxos = useUtxos();
   // const fetchUtxos = useFetchUtxosCallback();
   const atomicals = useAtomicals();
+  const networkType = useNetworkType()
 
   return useCallback(
     async (toAddressInfo: ToAddressInfo, toAmount: number, feeRate?: number, receiverToPayFee = false) => {
@@ -46,7 +49,7 @@ export function useCreateBitcoinTxCallback() {
       }
 
       try {
-        detectAddressTypeToScripthash(toAddressInfo.address);
+        detectAddressTypeToScripthash(toAddressInfo.address, networkType);
       } catch (e) {
         return {
           psbtHex: '',
@@ -102,7 +105,7 @@ export function useCreateBitcoinTxCallback() {
           }
         }
       }
-      const psbt = new Psbt({ network: bitcoin.networks.bitcoin });
+      const psbt = new Psbt({ network: toPsbtNetwork(networkType) });
       if(autoAdjust) {
         psbt.addOutput({
           address: toAddressInfo.address,
@@ -127,7 +130,7 @@ export function useCreateBitcoinTxCallback() {
           psbt.addOutput(utxo);
         }
       }
-      const { output } = detectAddressTypeToScripthash(fromAddress);
+      const { output } = detectAddressTypeToScripthash(fromAddress, networkType);
       for (const utxo of inputUtxos) {
         const utxoInput = utxoToInput({
           utxo,
@@ -187,6 +190,7 @@ export function useCreateARC20TxCallback() {
   const account = useCurrentAccount();
   const fromAddress = useAccountAddress();
   const atomicals = useAtomicals();
+  const networkType = useNetworkType();
   return useCallback(
     async (
       transferOptions: TransferFtConfigInterface,
@@ -199,7 +203,7 @@ export function useCreateARC20TxCallback() {
       }
       // const accounts =
       const pubkey = account.pubkey;
-      const psbt = new bitcoin.Psbt({ network: bitcoin.networks.bitcoin });
+      const psbt = new bitcoin.Psbt({ network: toPsbtNetwork(networkType) });
       let tokenBalanceIn = 0;
       let tokenBalanceOut = 0;
       for (const utxo of transferOptions.selectedUtxos) {
@@ -327,6 +331,7 @@ export function useCreateARCNFTTxCallback() {
   const account = useCurrentAccount();
   const fromAddress = useAccountAddress();
   const atomicals = useAtomicals();
+  const networkType = useNetworkType();
   return useCallback(
     async (
       transferOptions: {
@@ -337,9 +342,9 @@ export function useCreateARCNFTTxCallback() {
       satsbyte: number
     ): Promise<RawTxInfo | undefined> => {
       const pubkey = account.pubkey;
-      const psbt = new bitcoin.Psbt({ network: bitcoin.networks.bitcoin });
+      const psbt = new bitcoin.Psbt({ network: toPsbtNetwork(networkType) });
       try {
-        detectAddressTypeToScripthash(toAddressInfo.address);
+        detectAddressTypeToScripthash(toAddressInfo.address, networkType);
       } catch (e) {
         return {
           psbtHex: '',

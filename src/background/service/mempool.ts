@@ -1,4 +1,4 @@
-import { MEMPOOL_URL } from '@/shared/constant';
+import { MEMPOOL_URL, MEMPOOL_URL_TEST } from '@/shared/constant';
 import { TxItem } from './interfaces/api';
 
 export interface MempoolUtxo {
@@ -64,3 +64,4 @@ export class MempoolService {
 }
 
 export const mempoolService = new MempoolService(MEMPOOL_URL);
+export const mempoolServiceTest = new MempoolService(MEMPOOL_URL_TEST);

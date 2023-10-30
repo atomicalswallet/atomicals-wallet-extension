@@ -39,7 +39,8 @@ import {
   Account,
   SignPsbtOptions,
   AddressUserToSignInput,
-  PublicKeyUserToSignInput
+  PublicKeyUserToSignInput,
+  AtomNetworkType
 } from '@/shared/types';
 import { createSplitOrdUtxoV2 } from '@unisat/ord-utils';
 
@@ -51,7 +52,7 @@ import { publicKeyToAddress, toPsbtNetwork } from '../utils/tx-utils';
 import BaseController from './base';
 import { AtomicalService } from '../service/atomical';
 import { IAtomicalItem, IMergedAtomicals, IWalletBalance, UTXO as AtomUtxo } from '../service/interfaces/api';
-import { MempoolService, mempoolService } from '../service/mempool';
+import { MempoolService, mempoolService, mempoolServiceTest } from '../service/mempool';
 import { detectAddressTypeToScripthash } from '../service/utils';
 import { ElectrumApi } from '../service/eletrum';
 // import { AtomicalsInfo } from '../service/interfaces/utxo';
@@ -708,6 +709,9 @@ export class WalletController extends BaseController {
     const keyring = await this.getCurrentKeyring();
     if (!keyring) throw new Error('no current keyring');
     this.changeKeyring(keyring, currentAccount?.index);
+
+    const atomicalEndPoint = networkType === NetworkType.MAINNET ? AtomNetworkType.ATOMICALS : AtomNetworkType.ATOMICALS_TEST;
+    this.setAtomicalEndPoint(atomicalEndPoint)
   };
 
   getNetworkName = () => {
@@ -1310,12 +1314,19 @@ export class WalletController extends BaseController {
     return this.atomicalApi.electrumApi.validate(rawtx);
   };
 
-  getAtomicals = async (address: string): Promise<IWalletBalance> => {
+  getAtomicals = async (address: string, network: NetworkType): Promise<IWalletBalance> => {
     const host = this.getAtomicalEndPoint();
+    console.log('host====',host)
     if (host) {
-      this.changeAtomicalEndpoint(host);
+      let newHost;
+      if(network === NetworkType.TESTNET && host.indexOf('test') === -1){
+        newHost = AtomNetworkType.ATOMICALS_TEST
+      } else {
+        newHost = host
+      }
+      this.changeAtomicalEndpoint(newHost);
     }
-    const { scripthash, output } = detectAddressTypeToScripthash(address);
+    const { scripthash, output } = detectAddressTypeToScripthash(address, network);
     const res = await this.atomicalApi.electrumApi.atomicalsByScripthash(scripthash, true);
     console.log('res', res);
     let cursor = 0;
@@ -1328,7 +1339,7 @@ export class WalletController extends BaseController {
       cursor += size;
       hasMore = oldOrdinals.length < v.total;
     }
-    const txs = await mempoolService.txsMempool(address);
+    const txs = await (network === NetworkType.MAINNET ? mempoolService : mempoolServiceTest).txsMempool(address);
     const unconfirmedVinSet = new Set(txs!.map((e) => e.vin.map((e) => e.txid + ':' + e.vout)).flat());
     const all = (res.utxos as AtomUtxo[]).sort((a, b) => b.value - a.value);
     const confirmedUTXOs: AtomUtxo[] = [];
@@ -1403,11 +1414,18 @@ export class WalletController extends BaseController {
       } else if (atomical.type === 'FT') {
         const v = atomicalFTs.find((e) => e.$ticker === atomical.ticker);
         const utxos = atomicalsUTXOs.filter((e) => e.atomicals?.includes(atomical.atomical_id))!;
-        if (v) {
-          v.utxos.push(...utxos);
-          v.value += atomical.confirmed;
-        } else {
-          atomicalFTs.push({ ...item, utxos: utxos });
+        if (utxos.length) {
+          if (v) {
+            v.utxos.push(...utxos);
+            v.value += utxos.reduce((a, b) => a + b.value, 0);
+          } else {
+            atomicalFTs.push({
+              ...item,
+              confirmed: true,
+              utxos: utxos,
+              value: utxos.reduce((a, b) => a + b.value, 0),
+            });
+          }
         }
       } else if (atomical.type === 'NFT') {
         atomicalNFTs.push(item);

@@ -5,6 +5,8 @@ import * as bitcoin from 'bitcoinjs-lib';
 import * as ecc from 'tiny-secp256k1';
 import { Buffer } from 'buffer';
 import { AddressType, getAddressType } from '@/ui/utils/local_wallet';
+import { NetworkType } from '@/shared/types';
+import { toPsbtNetwork } from '../utils/tx-utils';
 
 bitcoin.initEccLib(ecc);
 // const ECPair = ECPairFactory(ecc);
@@ -52,7 +54,7 @@ bitcoin.initEccLib(ecc);
 
 export function detectAddressTypeToScripthash(
   address: string,
-  // network?: NetworkType,
+  network: NetworkType,
 ): {
   output: string | Buffer;
   scripthash: string;
@@ -74,8 +76,7 @@ export function detectAddressTypeToScripthash(
       throw 'unrecognized address';
     }
     default: {
-      const output = bitcoin.address.toOutputScript(address, bitcoin.networks.bitcoin);
-      // const output = bitcoin.address.toOutputScript(address, toPsbtNetwork(network));
+      const output = bitcoin.address.toOutputScript(address, toPsbtNetwork(network));
       return {
         output,
         scripthash: Buffer.from(sha256(output), 'hex').reverse().toString('hex'),
