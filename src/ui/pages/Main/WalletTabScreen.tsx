@@ -479,12 +479,12 @@ function ARC20List({ tabKey }: { tabKey: WalletTabScreenTabKey }) {
       <Row style={{ flexWrap: 'wrap' }} gap="sm">
         {tabKey === WalletTabScreenTabKey.MERGED ? (
           <>
-            <Row mb='md' full>
+            {/* <Row mb='md' full>
               <Text text={'To split NFTs, visit '} color="textDim" />
               <Text text={'https://wizz.cash/.'} onClick={() => {
                 window.open('https://wizz.cash');
               }} />
-            </Row>
+            </Row> */}
             {atomicals.atomicalMerged.map((utxo, index) => {
               return (
                 <Column key={index} full>

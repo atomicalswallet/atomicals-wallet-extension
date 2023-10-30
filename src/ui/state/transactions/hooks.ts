@@ -317,7 +317,7 @@ export function useCreateARC20TxCallback() {
         return {
           psbtHex: '',
           rawtx: '',
-          err: 'unknown method blockchain.atomicals.validate'
+          err: 'Please switch to the Atomicals endpoint.'
         };
       }
     },
