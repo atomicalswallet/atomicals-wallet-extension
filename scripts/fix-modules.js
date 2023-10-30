@@ -58,6 +58,63 @@ const fixWindowError4 = () => {
   fs.writeFileSync(file, fileData);
 };
 
+const fixSha256 = () => {
+  const file = './node_modules/bip-schnorr/src/convert.js';
+  let fileData = fs.readFileSync(file).toString();
+  fileData = fileData.replace(
+    `
+    const BigInteger = require('bigi');
+    const Buffer = require('safe-buffer').Buffer;
+    const sha256 = require('js-sha256');
+
+    function bufferToInt(buffer) {
+      return BigInteger.fromBuffer(buffer);
+    }
+
+    function intToBuffer(bigInteger) {
+      return bigInteger.toBuffer(32);
+    }
+
+    function hash(buffer) {
+      return Buffer.from(sha256.create().update(buffer).array());
+    }
+
+    module.exports = {
+      bufferToInt,
+      intToBuffer,
+      hash,
+    };
+    `,
+    `
+    const BigInteger = require('bigi');
+    const Buffer = require('safe-buffer').Buffer;
+    const binding = require('@noble/hashes/sha256');
+
+    const { sha256 } = binding;
+
+    
+    function bufferToInt(buffer) {
+      return BigInteger.fromBuffer(buffer);
+    }
+
+    function intToBuffer(bigInteger) {
+      return bigInteger.toBuffer(32);
+    }
+
+    function hash(buffer) {
+      return Buffer.from(sha256.create().update(buffer).digest(), 'hex');
+    }
+
+    module.exports = {
+      bufferToInt,
+      intToBuffer,
+      hash,
+    };
+    `
+  );
+  fs.writeFileSync(file, fileData);
+};
+
 const fixBufferError = () => {
   const file = './node_modules/bitcore-lib/lib/crypto/signature.js';
   let fileData = fs.readFileSync(file).toString();
