@@ -62,29 +62,7 @@ const fixSha256 = () => {
   const file = './node_modules/bip-schnorr/src/convert.js';
   let fileData = fs.readFileSync(file).toString();
   fileData = fileData.replace(
-    `
-    const BigInteger = require('bigi');
-    const Buffer = require('safe-buffer').Buffer;
-    const sha256 = require('js-sha256');
-
-    function bufferToInt(buffer) {
-      return BigInteger.fromBuffer(buffer);
-    }
-
-    function intToBuffer(bigInteger) {
-      return bigInteger.toBuffer(32);
-    }
-
-    function hash(buffer) {
-      return Buffer.from(sha256.create().update(buffer).array());
-    }
-
-    module.exports = {
-      bufferToInt,
-      intToBuffer,
-      hash,
-    };
-    `,
+    fileData,
     `
     const BigInteger = require('bigi');
     const Buffer = require('safe-buffer').Buffer;
@@ -162,6 +140,7 @@ const run = async () => {
     fixWindowError3();
     fixWindowError4();
     fixBufferError();
+    fixSha256();
   } catch (e) {
     console.error('error:', e.message);
     success = false;
