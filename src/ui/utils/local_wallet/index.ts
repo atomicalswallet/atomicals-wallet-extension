@@ -3,9 +3,9 @@ import * as bitcoin from 'bitcoinjs-lib';
 import * as ecc from '@bitcoinerlab/secp256k1';
 import { isTaprootInput } from 'bitcoinjs-lib/src/psbt/bip371';
 import ECPairFactory,{ ECPairInterface } from 'ecpair';
-import { NetworkType } from '@/shared/types';
+import { AddressType, NetworkType } from '@/shared/types';
 import { UTXO } from '@/background/service/interfaces/utxo';
-import { toPsbtNetwork } from '@/background/utils/tx-utils';
+import { publicKeyToAddress, toPsbtNetwork } from '@/background/utils/tx-utils';
 bitcoin.initEccLib(ecc);
 
 
@@ -79,19 +79,6 @@ export function utxoToInput({ utxo, script, addressType, pubkey }: {
 }
 
 
-export enum AddressType {
-  P2PKH,
-  P2WPKH,
-  P2TR,
-  P2SH_P2WPKH,
-  M44_P2WPKH,
-  M44_P2TR,
-  UNKNOWN,
-}
-
-
-
-
 export function getAddressType(address: string): AddressType {
   if (address.startsWith('bc1q')) {
     return AddressType.P2WPKH;
@@ -161,63 +148,63 @@ export function tweakSigner(signer: bitcoin.Signer, opts: any = {}): bitcoin.Sig
 
 
 
-export function publicKeyToPayment(
-  publicKey: string,
-  type: AddressType,
-  networkType: NetworkType,
-) {
-  const network = toPsbtNetwork(networkType);
-  if (!publicKey) return null;
-  const pubkey = Buffer.from(publicKey, 'hex');
-  if (type === AddressType.P2PKH) {
-    return bitcoin.payments.p2pkh({
-      pubkey,
-      network,
-    });
-  } else if (type === AddressType.P2WPKH || type === AddressType.M44_P2WPKH) {
-    return bitcoin.payments.p2wpkh({
-      pubkey,
-      network,
-    });
-  } else if (type === AddressType.P2TR || type === AddressType.M44_P2TR) {
-    return bitcoin.payments.p2tr({
-      internalPubkey: pubkey.slice(1, 33),
-      network,
-    });
-  } else if (type === AddressType.P2SH_P2WPKH) {
-    const data = bitcoin.payments.p2wpkh({
-      pubkey,
-      network,
-    });
-    return bitcoin.payments.p2sh({
-      pubkey,
-      network,
-      redeem: data,
-    });
-  }
-}
+//  function publicKeyToPayment(
+//   publicKey: string,
+//   type: AddressType,
+//   networkType: NetworkType,
+// ) {
+//   const network = toPsbtNetwork(networkType);
+//   if (!publicKey) return null;
+//   const pubkey = Buffer.from(publicKey, 'hex');
+//   if (type === AddressType.P2PKH) {
+//     return bitcoin.payments.p2pkh({
+//       pubkey,
+//       network,
+//     });
+//   } else if (type === AddressType.P2WPKH || type === AddressType.M44_P2WPKH) {
+//     return bitcoin.payments.p2wpkh({
+//       pubkey,
+//       network,
+//     });
+//   } else if (type === AddressType.P2TR || type === AddressType.M44_P2TR) {
+//     return bitcoin.payments.p2tr({
+//       internalPubkey: pubkey.slice(1, 33),
+//       network,
+//     });
+//   } else if (type === AddressType.P2SH_P2WPKH) {
+//     const data = bitcoin.payments.p2wpkh({
+//       pubkey,
+//       network,
+//     });
+//     return bitcoin.payments.p2sh({
+//       pubkey,
+//       network,
+//       redeem: data,
+//     });
+//   }
+// }
 
-export function publicKeyToAddress(
-  publicKey: string,
-  type: AddressType,
-  networkType: NetworkType,
-) {
-  const payment = publicKeyToPayment(publicKey, type, networkType);
-  if (payment && payment.address) {
-    return payment.address;
-  } else {
-    return '';
-  }
-}
+// function publicKeyToAddress(
+//   publicKey: string,
+//   type: AddressType,
+//   networkType: NetworkType,
+// ) {
+//   const payment = publicKeyToPayment(publicKey, type, networkType);
+//   if (payment && payment.address) {
+//     return payment.address;
+//   } else {
+//     return '';
+//   }
+// }
 
-export function publicKeyToScriptPk(
-  publicKey: string,
-  type: AddressType,
-  networkType: NetworkType,
-) {
-  const payment = publicKeyToPayment(publicKey, type, networkType);
-  return payment!.output!.toString('hex');
-}
+// export function publicKeyToScriptPk(
+//   publicKey: string,
+//   type: AddressType,
+//   networkType: NetworkType,
+// ) {
+//   const payment = publicKeyToPayment(publicKey, type, networkType);
+//   return payment!.output!.toString('hex');
+// }
 
 export interface ToSignInput {
   index: number;
@@ -273,10 +260,7 @@ export class LocalWallet {
     networkType: NetworkType = NetworkType.TESTNET,
     addressType: AddressType = AddressType.P2WPKH,
   ) {
-    console.log('toPsbtNetwork', networkType, NetworkType.MAINNET)
-    console.log('toPsbtNetwork', networkType)
     const network = toPsbtNetwork(networkType);
-    console.log('toPsbtNetwork',toPsbtNetwork)
     const keyPair = ECPair.fromWIF(wif, network);
     this.keyPair = keyPair;
     this.pubkey = keyPair.publicKey.toString('hex');

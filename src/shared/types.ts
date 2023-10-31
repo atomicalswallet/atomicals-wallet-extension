@@ -12,7 +12,8 @@ export enum AddressType {
   P2TR,
   P2SH_P2WPKH,
   M44_P2WPKH,
-  M44_P2TR
+  M44_P2TR,
+  UNKNOWN,
 }
 
 export enum NetworkType {

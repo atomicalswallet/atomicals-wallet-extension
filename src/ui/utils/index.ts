@@ -5,14 +5,13 @@ import BigNumber from 'bignumber.js';
 import { toUnicode } from 'punycode';
 import { useLocation } from 'react-router-dom';
 import {
-  AddressType,
   CalcFeeOptions,
   LocalWallet,
   getAddressType,
   internalWallet,
   utxoToInput
 } from './local_wallet';
-import { GasCalculateInterface, NetworkType } from '@/shared/types';
+import { AddressType, GasCalculateInterface, NetworkType } from '@/shared/types';
 import { DUST_AMOUNT } from '@/shared/constant';
 import { toPsbtNetwork } from '@/background/utils/tx-utils';
 import * as ecc from '@bitcoinerlab/secp256k1';

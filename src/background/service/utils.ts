@@ -4,8 +4,8 @@ import * as bitcoin from 'bitcoinjs-lib';
 // import ECPairFactory from 'ecpair';
 import * as ecc from 'tiny-secp256k1';
 import { Buffer } from 'buffer';
-import { AddressType, getAddressType } from '@/ui/utils/local_wallet';
-import { NetworkType } from '@/shared/types';
+import { getAddressType } from '@/ui/utils/local_wallet';
+import { AddressType, NetworkType } from '@/shared/types';
 import { toPsbtNetwork } from '../utils/tx-utils';
 
 bitcoin.initEccLib(ecc);
