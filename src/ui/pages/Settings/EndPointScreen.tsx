@@ -1,9 +1,10 @@
 import { ATOM_NETWORK_TYPES } from '@/shared/constant';
 import { Content, Header, Layout, Icon, Column, Row, Card, Text } from '@/ui/components';
-import { useAtomNetworkType, useChangeAtomNetworkTypeCallback } from '@/ui/state/settings/hooks';
+import { useAtomNetworkType, useChangeAtomNetworkTypeCallback, useNetworkType } from '@/ui/state/settings/hooks';
 
 export default function EndPointScreen() {
   const networkType = useAtomNetworkType();
+  const network = useNetworkType()
   // const changeNetworkType = useChangeNetworkTypeCallback();
   const changeAtomNetworkType = useChangeAtomNetworkTypeCallback()
   console.log('networkScreen', networkType)
@@ -17,7 +18,7 @@ export default function EndPointScreen() {
       />
       <Content>
         <Column>
-          {ATOM_NETWORK_TYPES.map((item, index) => {
+          {ATOM_NETWORK_TYPES.filter(o => o.validNames.includes(network)).map((item, index) => {
             return (
               <Card
                 key={index}

@@ -710,8 +710,9 @@ export class WalletController extends BaseController {
     if (!keyring) throw new Error('no current keyring');
     this.changeKeyring(keyring, currentAccount?.index);
 
-    const atomicalEndPoint = networkType === NetworkType.MAINNET ? AtomNetworkType.ATOMICALS : AtomNetworkType.ATOMICALS_TEST;
-    this.setAtomicalEndPoint(atomicalEndPoint)
+    const atomicalEndPoint =
+      networkType === NetworkType.MAINNET ? AtomNetworkType.ATOMICALS : AtomNetworkType.ATOMICALS_TEST;
+    this.setAtomicalEndPoint(atomicalEndPoint);
   };
 
   getNetworkName = () => {
@@ -1316,13 +1317,15 @@ export class WalletController extends BaseController {
 
   getAtomicals = async (address: string, network: NetworkType): Promise<IWalletBalance> => {
     const host = this.getAtomicalEndPoint();
-    console.log('host====',host)
+    console.log('host====', host);
     if (host) {
       let newHost;
-      if(network === NetworkType.TESTNET && host.indexOf('test') === -1){
-        newHost = AtomNetworkType.ATOMICALS_TEST
+      if (network === NetworkType.TESTNET && host.indexOf('test') === -1) {
+        newHost = AtomNetworkType.ATOMICALS_TEST;
+      } else if (network === NetworkType.MAINNET && host.indexOf('test') > -1) {
+        newHost = AtomNetworkType.ATOMICALS;
       } else {
-        newHost = host
+        newHost = host;
       }
       this.changeAtomicalEndpoint(newHost);
     }
@@ -1423,7 +1426,7 @@ export class WalletController extends BaseController {
               ...item,
               confirmed: true,
               utxos: utxos,
-              value: utxos.reduce((a, b) => a + b.value, 0),
+              value: utxos.reduce((a, b) => a + b.value, 0)
             });
           }
         }
