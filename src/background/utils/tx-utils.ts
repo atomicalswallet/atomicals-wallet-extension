@@ -12,10 +12,10 @@ export const validator = (pubkey: Buffer, msghash: Buffer, signature: Buffer): b
   ECPair.fromPublicKey(pubkey).verify(msghash, signature);
 
 export function toPsbtNetwork(networkType: NetworkType) {
-  if (networkType === NetworkType.MAINNET) {
-    return bitcoin.networks.bitcoin;
-  } else {
+  if (networkType === NetworkType.TESTNET) {
     return bitcoin.networks.testnet;
+  } else {
+    return bitcoin.networks.bitcoin;
   }
 }
 

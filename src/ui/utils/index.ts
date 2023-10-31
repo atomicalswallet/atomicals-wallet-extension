@@ -15,6 +15,13 @@ import {
 import { GasCalculateInterface, NetworkType } from '@/shared/types';
 import { DUST_AMOUNT } from '@/shared/constant';
 import { toPsbtNetwork } from '@/background/utils/tx-utils';
+import * as ecc from '@bitcoinerlab/secp256k1';
+import ECPairFactory from 'ecpair';
+
+bitcoin.initEccLib(ecc);
+
+
+const ECPair = ECPairFactory(ecc);
 
 export * from './hooks';
 export * from './WalletContext';
@@ -406,8 +413,10 @@ export function returnImageType(item: IAtomicalItem): { type: string; content: s
 
 export function calcFee({ inputs, outputs, feeRate, addressType, network, autoFinalized }: CalcFeeOptions) {
   network ??= NetworkType.MAINNET;
-  const wallet = new LocalWallet(internalWallet.WIF, network, addressType);
-  const psbt = new bitcoin.Psbt({ network: toPsbtNetwork(network) });
+  const psbtNetwork = toPsbtNetwork(network);
+  const wif = ECPair.makeRandom({ network: psbtNetwork }).toWIF();
+  const wallet = new LocalWallet(wif, network, addressType);
+  const psbt = new bitcoin.Psbt({ network:psbtNetwork });
   if (addressType === AddressType.P2PKH) {
     // eslint-disable-next-line @typescript-eslint/ban-ts-comment
     // @ts-ignore

@@ -1,7 +1,7 @@
 import { Psbt } from 'bitcoinjs-lib';
 import { useCallback, useMemo } from 'react';
 import * as bitcoin from 'bitcoinjs-lib';
-import { NetworkType, RawTxInfo, ToAddressInfo, TransferFtConfigInterface } from '@/shared/types';
+import { RawTxInfo, ToAddressInfo, TransferFtConfigInterface } from '@/shared/types';
 import { useTools } from '@/ui/components/ActionComponent';
 import { calcFee, calculateFundsRequired, calculateGasV2, satoshisToBTC, sleep, useWallet } from '@/ui/utils';
 
@@ -89,7 +89,7 @@ export function useCreateBitcoinTxCallback() {
             outputs: newOutputs,
             feeRate: feeRate,
             addressType: getAddressType(fromAddress)!,
-            network: NetworkType.MAINNET
+            network: networkType
           });
           if(autoAdjust) {
             fee = retFee;
@@ -105,8 +105,8 @@ export function useCreateBitcoinTxCallback() {
           }
         }
       }
-      // const psbt = new Psbt({ network: toPsbtNetwork(networkType) });
-      const psbt = new Psbt({ network: bitcoin.networks.bitcoin });
+      const psbt = new Psbt({ network: toPsbtNetwork(networkType) });
+      // const psbt = new Psbt({ network: bitcoin.networks.bitcoin });
       if(autoAdjust) {
         psbt.addOutput({
           address: toAddressInfo.address,
