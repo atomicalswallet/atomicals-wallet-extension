@@ -105,7 +105,8 @@ export function useCreateBitcoinTxCallback() {
           }
         }
       }
-      const psbt = new Psbt({ network: toPsbtNetwork(networkType) });
+      // const psbt = new Psbt({ network: toPsbtNetwork(networkType) });
+      const psbt = new Psbt({ network: bitcoin.networks.bitcoin });
       if(autoAdjust) {
         psbt.addOutput({
           address: toAddressInfo.address,
@@ -251,7 +252,8 @@ export function useCreateARC20TxCallback() {
           outputs: transferOptions.outputs,
           regularsUTXOs: atomicals.regularsUTXOs
         },
-        satsbyte
+        satsbyte,
+        networkType,
       );
       // add nonAtomUtxos least to expected deposit value
       let addedValue = 0;

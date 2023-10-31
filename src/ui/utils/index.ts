@@ -10,11 +10,11 @@ import {
   LocalWallet,
   getAddressType,
   internalWallet,
-  toPsbtNetwork,
   utxoToInput
 } from './local_wallet';
 import { GasCalculateInterface, NetworkType } from '@/shared/types';
 import { DUST_AMOUNT } from '@/shared/constant';
+import { toPsbtNetwork } from '@/background/utils/tx-utils';
 
 export * from './hooks';
 export * from './WalletContext';
@@ -226,14 +226,14 @@ export async function calculateGasV2(
   fromAddress: string,
   transferOptions: GasCalculateInterface,
   satsbyte: number,
-  networkType?: NetworkType
+  networkType: NetworkType
 ): Promise<number> {
   const network = toPsbtNetwork(networkType);
   const addressType = getAddressType(fromAddress);
   const wallet = new LocalWallet(internalWallet.WIF, networkType ? networkType : NetworkType.MAINNET, addressType);
   const psbt = new bitcoin.Psbt({ network });
   const psbt2 = new bitcoin.Psbt({ network });
-  const { output: scriptOutput } = detectAddressTypeToScripthash(wallet.address);
+  const { output: scriptOutput } = detectAddressTypeToScripthash(wallet.address, networkType);
   let tokenInputsLength = 0;
   let tokenOutputsLength = 0;
   for (const utxo of transferOptions.selectedUtxos) {
@@ -277,7 +277,7 @@ export async function calculateGasV2(
             break;
           } else {
             addedValue += utxo.value;
-            const { output } = detectAddressTypeToScripthash(wallet.address);
+            const { output } = detectAddressTypeToScripthash(wallet.address, networkType);
             psbt2.addInput(utxoToInput({ utxo, addressType, pubkey: wallet.pubkey, script: output })!.data);
             // psbt.setInputSequence(utxo.vout, 0xfffffffd);
           }
@@ -413,7 +413,7 @@ export function calcFee({ inputs, outputs, feeRate, addressType, network, autoFi
     // @ts-ignore
     psbt.__CACHE.__UNSAFE_SIGN_NONSEGWIT = true;
   }
-  const { output } = detectAddressTypeToScripthash(wallet.address);
+  const { output } = detectAddressTypeToScripthash(wallet.address, network);
   inputs.forEach((v) => {
     psbt.addInput(utxoToInput({ utxo: v, addressType, pubkey: wallet.pubkey, script: output })!.data);
   });
