@@ -410,6 +410,8 @@ export function returnImageType(item: IAtomicalItem): { type: string; content: s
   return { type, content, tag, buffer };
 }
 
+
+
 export function calcFee({ inputs, outputs, feeRate, addressType, network, autoFinalized }: CalcFeeOptions) {
   network ??= NetworkType.MAINNET;
   const psbtNetwork = toPsbtNetwork(network);
